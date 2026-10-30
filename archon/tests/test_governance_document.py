@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import unittest
 
 
@@ -8,11 +9,24 @@ ROOT = Path(__file__).resolve().parents[2]
 AGENTS_PATH = ROOT / "AGENTS.md"
 
 
+def normalize_text(text: str) -> str:
+    """Collapse Markdown wrapping and other whitespace into single spaces."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def assert_doc_contains_phrase(doc_content: str, target_phrase: str) -> None:
+    normalized_doc = normalize_text(doc_content).casefold()
+    normalized_target = normalize_text(target_phrase).casefold()
+    if normalized_target not in normalized_doc:
+        raise AssertionError(
+            f"Missing expected clause:\n  Expected: {normalized_target}\n"
+        )
+
+
 class GovernanceDocumentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.document = AGENTS_PATH.read_text(encoding="utf-8")
-        cls.normalized = " ".join(cls.document.casefold().split())
 
     def test_all_ten_governance_areas_remain_documented(self) -> None:
         headings = (
@@ -29,7 +43,7 @@ class GovernanceDocumentTests(unittest.TestCase):
         )
         for heading in headings:
             with self.subTest(heading=heading):
-                self.assertIn(heading.casefold(), self.normalized)
+                assert_doc_contains_phrase(self.document, heading)
 
     def test_document_keeps_legal_and_privacy_limits_explicit(self) -> None:
         required_statements = (
@@ -44,7 +58,7 @@ class GovernanceDocumentTests(unittest.TestCase):
         )
         for statement in required_statements:
             with self.subTest(statement=statement):
-                self.assertIn(statement, self.normalized)
+                assert_doc_contains_phrase(self.document, statement)
 
 
 if __name__ == "__main__":
