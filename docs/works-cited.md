@@ -6,6 +6,10 @@ Cambridge UP, 1908. *Euclid E-Texts*, Trinity College Dublin,
 [https://www.maths.tcd.ie/~dwilkins/Courses/MA232A/Euclid_ETexts/EuclidBookI_Heath1908/EuclidBookIProp47_Heath1908.php](https://www.maths.tcd.ie/~dwilkins/Courses/MA232A/Euclid_ETexts/EuclidBookI_Heath1908/EuclidBookIProp47_Heath1908.php).
 Accessed 30 Oct. 2026.
 
+G4LO. “Accessibility Is Architecture // Cognitive Cockpit.” *4lo*, GitHub,
+https://github.com/brogrizzly/4lo/blob/62edfb6ad70897fa15ae87cec543641ba05eec18/docs/ACCESSIBILITY.md.
+Accessed 30 Oct. 2026.
+
 ## Project-source credit
 
 The G4LO formula and coordinate meanings preserved in
