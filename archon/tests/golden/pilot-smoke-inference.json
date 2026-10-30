@@ -1,0 +1,11 @@
+{
+  "fixture_version": 1,
+  "run_directory": "checkpoints/pilot-smoke-test",
+  "prompt": "Answer:",
+  "max_new_tokens": 8,
+  "expected": {
+    "text": "acal o o ",
+    "finish_reason": "max_new_tokens",
+    "model_digest": "34284bbe7c879a88e3aedbf8da0b94b70411c2981dc7ceb05120df903f0dd593"
+  }
+}

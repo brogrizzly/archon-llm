@@ -83,6 +83,19 @@ Passing parameter accounting does not select or approve the candidate. The
 pilot configuration is separately defined in
 [`configs/pilot.json`](configs/pilot.json); it has 94,528 parameters.
 
+## Tests and build gate
+
+Run `pnpm run test` to execute the workspace TypeScript suites, validate the
+candidate parameter count, and run the Python training and inference tests.
+`pnpm run build` runs those tests and typechecks before building workspace
+packages.
+
+The versioned golden fixture at
+[`tests/golden/pilot-smoke-inference.json`](tests/golden/pilot-smoke-inference.json)
+checks deterministic inference with the checked-in pilot checkpoint. It guards
+reproducibility and checkpoint provenance; it does not measure language-model
+quality.
+
 Full pretraining needs a broad, rights-cleared corpus with recorded provenance,
 licenses, filtering, and an approved use basis. This workspace has no CUDA GPU.
 The candidate's BF16 weights alone would be about 4.03 GB; a common

@@ -1,7 +1,44 @@
-import { useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 
 type VisionMode = "red_night" | "red_day" | "clarity_night" | "clarity_day";
 type AppearanceMode = VisionMode | "c64";
+type DojoRank = { xp: number; name: string; color: string; quote: string };
+
+const DOJO_XP_KEY = "4lo_dojo_xp";
+
+const dojoRanks: DojoRank[] = [
+  { xp: 0, name: "White Belt", color: "#FFFFFF", quote: "Clean slate. Begin the analysis." },
+  { xp: 100, name: "Yellow Belt", color: "#FFE135", quote: "The first discovery. Sunlight hits the root." },
+  { xp: 300, name: "Green Belt", color: "#4DB6AC", quote: "The flow of logic is becoming natural." },
+  { xp: 700, name: "Black Belt", color: "#121212", quote: "Master of the Root Cause. Honor is yours." },
+];
+
+const senseiTips = [
+  "Focus on “why,” not “who.” Respect the process.",
+  "A true master finds the root, not the symptom.",
+  "Discipline in data leads to clarity in action.",
+  "Training requires patience. Keep digging.",
+];
+
+function getDojoRank(xp: number): DojoRank {
+  return [...dojoRanks].reverse().find((rank) => xp >= rank.xp) ?? dojoRanks[0];
+}
+
+function readDojoProgress(): { xp: number; warning: string } {
+  if (typeof window === "undefined") {
+    return { xp: 0, warning: "Browser storage is unavailable; Dojo progress cannot be restored." };
+  }
+
+  try {
+    const value = Number(window.localStorage.getItem(DOJO_XP_KEY) ?? 0);
+    if (!Number.isSafeInteger(value) || value < 0) {
+      return { xp: 0, warning: "Saved Dojo progress was invalid; starting at 0 XP." };
+    }
+    return { xp: value, warning: "" };
+  } catch {
+    return { xp: 0, warning: "Browser storage is unavailable; Dojo progress cannot be restored." };
+  }
+}
 
 type Palette = {
   page: string;
@@ -100,15 +137,83 @@ export function ArchonHud() {
   const [reducedMotion, setReducedMotion] = useState(true);
   const [prompt, setPrompt] = useState("");
   const [notice, setNotice] = useState("");
+  const [storedDojoProgress] = useState(readDojoProgress);
+  const [dojoXp, setDojoXp] = useState(storedDojoProgress.xp);
+  const [dojoMessage, setDojoMessage] = useState("");
+  const [dojoStorageWarning, setDojoStorageWarning] = useState(storedDojoProgress.warning);
+  const [senseiTip, setSenseiTip] = useState("");
+  const [senseiTipIndex, setSenseiTipIndex] = useState(0);
+  const [senseiRewardClaimed, setSenseiRewardClaimed] = useState(false);
+  const [promptRewardClaimed, setPromptRewardClaimed] = useState(false);
+  const [levelUpRank, setLevelUpRank] = useState<DojoRank | null>(null);
+  const levelUpDialogRef = useRef<HTMLDialogElement>(null);
   const colors = palette[appearanceMode];
+  const dojoRank = getDojoRank(dojoXp);
+  const nextRank = dojoRanks.find((rank) => rank.xp > dojoXp);
+  const rankProgressMax = nextRank ? nextRank.xp - dojoRank.xp : 1;
+  const rankProgress = nextRank
+    ? Math.min(rankProgressMax, Math.max(0, dojoXp - dojoRank.xp))
+    : 1;
+  const rankProgressPercent = nextRank
+    ? Math.round((rankProgress / rankProgressMax) * 100)
+    : 100;
+
+  useEffect(() => {
+    const dialog = levelUpDialogRef.current;
+    if (!dialog) return;
+
+    if (levelUpRank && !dialog.open) dialog.showModal();
+    if (!levelUpRank && dialog.open) dialog.close();
+  }, [levelUpRank]);
+
+  function awardDojoXp(points: number, reason: string) {
+    const nextXp = dojoXp + points;
+    const previousRank = getDojoRank(dojoXp);
+    const updatedRank = getDojoRank(nextXp);
+
+    setDojoXp(nextXp);
+    setDojoMessage(`+${points} XP · ${reason}`);
+
+    try {
+      window.localStorage.setItem(DOJO_XP_KEY, String(nextXp));
+      setDojoStorageWarning("");
+    } catch {
+      setDojoStorageWarning("Browser storage is unavailable; Dojo progress may reset when this page closes.");
+    }
+
+    if (updatedRank.name !== previousRank.name) setLevelUpRank(updatedRank);
+  }
+
+  function askSensei() {
+    setSenseiTip(senseiTips[senseiTipIndex % senseiTips.length]);
+    setSenseiTipIndex((index) => index + 1);
+
+    if (senseiRewardClaimed) {
+      setDojoMessage("Tip refreshed. Sensei XP is awarded once per page session.");
+      return;
+    }
+
+    setSenseiRewardClaimed(true);
+    awardDojoXp(5, "asking Sensei for guidance");
+  }
 
   function submitPrompt(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const hasPrompt = Boolean(prompt.trim());
     setNotice(
-      prompt.trim()
+      hasPrompt
         ? "Prototype only — no checkpoint or runtime is connected. Nothing was sent or generated."
         : "Enter a prompt to preview the prototype interaction. No runtime is connected.",
     );
+
+    if (!hasPrompt) return;
+    if (promptRewardClaimed) {
+      setDojoMessage("Prompt checked. Prompt XP is awarded once per page session.");
+      return;
+    }
+
+    setPromptRewardClaimed(true);
+    awardDojoXp(15, "completing a prompt exercise");
   }
 
   const variables = {
@@ -145,6 +250,8 @@ export function ArchonHud() {
         .archon-root .accent-rule { background: var(--accent); opacity: var(--accent-strength); }
         .archon-root input[type="range"] { accent-color: var(--accent); min-height: 2.75em; }
         .archon-root input[type="checkbox"] { accent-color: var(--accent); width: 1.2em; height: 1.2em; }
+        .archon-root .dojo-level-dialog { width: min(36rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; margin: auto; border: 2px solid var(--line); padding: clamp(1.25rem, 4vw, 2rem); background: var(--panel); color: var(--ink); }
+        .archon-root .dojo-level-dialog::backdrop { background: rgba(18, 18, 18, .86); }
         @media (prefers-reduced-motion: reduce) {
           .archon-root *, .archon-root *::before, .archon-root *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
         }
@@ -309,11 +416,106 @@ export function ArchonHud() {
           </div>
         </section>
 
+        <section className="motion-enabled mt-5 border-l-4 border-y p-5 sm:p-7" style={{ borderColor: "var(--accent)", background: "var(--panel)" }} aria-labelledby="dojo-heading">
+          <div className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-start sm:justify-between" style={{ borderColor: "var(--line)" }}>
+            <div>
+              <p className="label mb-1 flex items-center gap-2" style={{ color: "var(--muted)" }}>
+                <span aria-hidden="true" className="inline-flex gap-1">
+                  <span className="inline-block h-3 w-1" style={{ background: "#FF8066" }} />
+                  <span className="inline-block h-3 w-1" style={{ background: "#4DB6AC" }} />
+                </span>
+                05 / Practice
+              </p>
+              <h2 id="dojo-heading" className="section-title font-semibold">Archon Dojo</h2>
+              <p className="small mt-2 max-w-2xl" style={{ color: "var(--muted)" }}>
+                Practice prompts and root-cause thinking. Dojo progress is local to this browser; it does not train the model or measure model capability.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={askSensei}
+              className="motion-enabled min-h-12 border-2 px-5 py-3 text-left font-semibold"
+              style={{ borderColor: "var(--accent)", background: "var(--accent)", color: colors.accentInk }}
+              aria-label="Ask Sensei for a practice tip"
+            >
+              Ask Sensei
+              <span aria-hidden="true" className="ml-3">→</span>
+            </button>
+          </div>
+
+          <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span aria-hidden="true" className="inline-block h-5 w-10 border" style={{ background: dojoRank.color, borderColor: "var(--line)" }} />
+                  <p className="font-semibold">{dojoRank.name}</p>
+                </div>
+                <p className="mono font-semibold" aria-label={`${dojoXp} experience points`}>{dojoXp} XP</p>
+              </div>
+              <div
+                className="mt-3 h-3 w-full border"
+                role="progressbar"
+                aria-label={nextRank ? `Progress from ${dojoRank.name} toward ${nextRank.name}` : "Top rank reached"}
+                aria-valuemin={0}
+                aria-valuemax={rankProgressMax}
+                aria-valuenow={rankProgress}
+                aria-valuetext={nextRank ? `${rankProgress} of ${rankProgressMax} XP toward ${nextRank.name}` : "Top rank reached"}
+                style={{ borderColor: "var(--line)", background: "var(--page)" }}
+              >
+                <div className="h-full" style={{ width: `${rankProgressPercent}%`, background: "var(--accent)" }} />
+              </div>
+              <p className="small mt-2" style={{ color: "var(--muted)" }}>
+                {nextRank ? `${nextRank.xp - dojoXp} XP to ${nextRank.name}` : "Highest rank reached"}
+              </p>
+            </div>
+
+            <div className="border-l-4 px-4 py-3" style={{ borderColor: "var(--accent)", background: "var(--soft)" }}>
+              <p className="label mb-2" style={{ color: "var(--muted)" }}>Sensei says</p>
+              <p className="body-copy" role="status" aria-live="polite">
+                {senseiTip || "Ask Sensei for a short practice cue. No prompt text is sent or stored."}
+              </p>
+            </div>
+          </div>
+
+          {(dojoMessage || dojoStorageWarning) && (
+            <div className="mt-4 space-y-2">
+              {dojoMessage && <p className="small" role="status" aria-live="polite" style={{ color: "var(--muted)" }}>{dojoMessage}</p>}
+              {dojoStorageWarning && <p className="small" role="alert" style={{ color: "var(--warn)" }}>{dojoStorageWarning}</p>}
+            </div>
+          )}
+          <p className="small mt-5 border-t pt-4" style={{ borderColor: "var(--line)", color: "var(--muted)" }}>
+            XP is awarded once per page session for a prompt exercise and once for consulting Sensei. Accessibility settings and ordinary button or field interactions do not award points.
+          </p>
+        </section>
+
         <footer className="mt-8 flex flex-col gap-3 border-t py-5 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "var(--line)", color: "var(--muted)" }}>
           <p className="small">Archon HUD · Visual prototype · No model connection</p>
           <p className="mono small">Human judgment stays in the loop.</p>
         </footer>
       </div>
+
+      <dialog
+        ref={levelUpDialogRef}
+        className="dojo-level-dialog"
+        aria-labelledby="dojo-level-title"
+        aria-describedby="dojo-level-quote"
+        onCancel={(event) => { event.preventDefault(); setLevelUpRank(null); }}
+        onClose={() => setLevelUpRank(null)}
+      >
+        <p className="label mb-3" style={{ color: "var(--muted)" }}>Rank unlocked</p>
+        <h2 id="dojo-level-title" className="display font-semibold">Level up</h2>
+        <div className="my-5 h-8 w-full border-2" aria-hidden="true" style={{ background: levelUpRank?.color ?? "transparent", borderColor: "var(--line)" }} />
+        <h3 className="section-title font-semibold">{levelUpRank?.name}</h3>
+        <p id="dojo-level-quote" className="body-copy mt-3" style={{ color: "var(--muted)" }}>{levelUpRank?.quote}</p>
+        <button
+          type="button"
+          onClick={() => setLevelUpRank(null)}
+          className="motion-enabled mt-6 min-h-12 border-2 px-5 py-3 font-semibold"
+          style={{ borderColor: "var(--accent)", background: "var(--accent)", color: colors.accentInk }}
+        >
+          Continue
+        </button>
+      </dialog>
     </main>
   );
 }
