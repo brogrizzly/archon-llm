@@ -8,11 +8,13 @@ digests, ordering, provenance, and validation boundaries. The Day 26 prototype
 also uses “weight” for instrument-measured mass/force values. This is not a
 LoRA adapter or a trainable tensor-delta format.
 
-**Why:** The project owner wants Archon's trainable weights considered alongside
-4LO; conflating the terms would misrepresent what Archon's checkpoint or a
-future adapter contains.
+**Why:** The project owner says they wrote 4LO and explicitly permits reusing
+relevant 4LO code for Archon. Conflating its state deltas with model parameters
+would still misrepresent Archon's checkpoints or future adapters.
 
-**How to apply:** If Archon adopts a neural model delta, call it a parameter
-delta or adapter and bind it to the exact base checkpoint, architecture,
-tokenizer, and license. Use G4LO only as a provenance and authorization
-analogy, not as a drop-in training format.
+**How to apply:** Reuse relevant 4LO code for Archon with source attribution,
+but do not infer rights to third-party contributions or dependencies. If
+Archon adopts a neural model delta, call it a parameter delta or adapter and
+bind it to the exact base checkpoint, architecture, tokenizer, and license.
+Use G4LO only as a provenance and authorization analogy, not as a drop-in
+training format.
