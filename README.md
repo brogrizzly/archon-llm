@@ -16,6 +16,10 @@ its mathematical foundation.
 - [`archon/`](archon/README.md) — candidate configuration and independent
   tokenizer/model training code.
 - [`docs/`](docs/) — project scope, model card, pilot evaluation, and roadmap.
+- [`AGENTS.md`](AGENTS.md) — contributor governance and evidence status; not a
+  compliance attestation.
+- [`threat_model.md`](threat_model.md) — prototype trust boundaries and
+  security guarantees.
 - [`docs/works-cited.md`](docs/works-cited.md) — MLA 9 reference and source credit.
 
 ## Current status

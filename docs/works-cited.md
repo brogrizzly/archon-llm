@@ -10,6 +10,19 @@ Cambridge UP, 1908. *Euclid E-Texts*, Trinity College Dublin,
 [https://www.maths.tcd.ie/~dwilkins/Courses/MA232A/Euclid_ETexts/EuclidBookI_Heath1908/EuclidBookIProp47_Heath1908.php](https://www.maths.tcd.ie/~dwilkins/Courses/MA232A/Euclid_ETexts/EuclidBookI_Heath1908/EuclidBookIProp47_Heath1908.php).
 Accessed 30 Oct. 2026.
 
+European Parliament and Council of the European Union. “Regulation (EU)
+2024/1689 of the European Parliament and of the Council of 13 June 2024 Laying
+Down Harmonised Rules on Artificial Intelligence (Artificial Intelligence
+Act).” *Official Journal of the European Union*, 12 July 2024, EUR-Lex,
+https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng. Accessed 30 Oct. 2026.
+
+European Parliament and Council of the European Union. “Regulation (EU)
+2016/679 of the European Parliament and of the Council of 27 April 2016 on the
+Protection of Natural Persons with Regard to the Processing of Personal Data
+and on the Free Movement of Such Data (General Data Protection Regulation).”
+*Official Journal of the European Union*, 4 May 2016, EUR-Lex,
+https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng. Accessed 30 Oct. 2026.
+
 G4LO. “Accessibility Is Architecture // Cognitive Cockpit.” *4lo*, GitHub,
 https://github.com/brogrizzly/4lo/blob/62edfb6ad70897fa15ae87cec543641ba05eec18/docs/ACCESSIBILITY.md.
 Accessed 30 Oct. 2026.
@@ -51,6 +64,15 @@ Accessed 30 Oct. 2026.
 G4LO. “MathCore.ts.” *4lo*, GitHub,
 https://github.com/brogrizzly/4lo/blob/62edfb6ad70897fa15ae87cec543641ba05eec18/src/core/mathcore/MathCore.ts.
 Accessed 30 Oct. 2026.
+
+International Organization for Standardization and International
+Electrotechnical Commission. *Information Technology—Artificial
+Intelligence—Management System*. ISO/IEC 42001:2023, 2023,
+https://www.iso.org/standard/42001. Accessed 30 Oct. 2026.
+
+National Institute of Standards and Technology. *Artificial Intelligence Risk
+Management Framework (AI RMF 1.0)*. NIST AI 100-1, 26 Jan. 2023,
+https://doi.org/10.6028/NIST.AI.100-1. Accessed 30 Oct. 2026.
 
 ## Project-source credit
 

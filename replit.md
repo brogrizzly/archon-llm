@@ -5,8 +5,9 @@ Archon is an open-source language-model project; Anchor is the name for its math
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm run test` — TypeScript suites, candidate validation, Python tests, and golden checks
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
+- `pnpm run build` — tests + typecheck + all workspace package builds
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
@@ -33,12 +34,15 @@ Archon is an open-source language-model project; Anchor is the name for its math
 - `anchor/` — Anchor mathematics source of truth and future implementation
 - `archon/` — model specification and future implementation
 - `docs/` — project brief, math worksheet, and model card
+- `AGENTS.md` — contributor governance, current evidence, and open controls
+- `threat_model.md` — prototype assets, trust boundaries, and threat categories
 - `ROADMAP.md` — staged specification and implementation work
 
 ## Architecture decisions
 
 - The mathematical definition and the model implementation must remain distinct and traceable.
 - Unspecified equations, architecture, data, and evaluation details must be marked as open rather than filled in by assumption.
+- `AGENTS.md` is an operating record, not a legal or conformity attestation. Read it before changing model, data, inference, audit, or deployment behavior.
 
 ## Product
 
