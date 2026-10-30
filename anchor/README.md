@@ -5,12 +5,15 @@ This directory is the source of truth for its formal definition.
 
 ## Status
 
-The name is established; the equations, assumptions, and intended role are not
-yet defined. No formula or mechanism is implied by the name “Anchor.”
+The supplied G4LO formula is recorded in
+[`../docs/anchor-mathematics.md`](../docs/anchor-mathematics.md). Its proposed
+execution contract is incomplete: `Pi`, numerator normalization, coordinate
+encodings, scales, and threshold policy remain unresolved. The formula is not
+yet executable, and no convergence claim is made.
 
 ## Specification checklist
 
-Before implementing Anchor, document:
+Before implementing Anchor, resolve and document:
 
 - the problem it is intended to solve;
 - notation, tensor shapes, and variable domains;
@@ -28,4 +31,5 @@ its behavior. Keep derivations and implementation notes separate from the
 normative definition.
 
 See [`../docs/anchor-mathematics.md`](../docs/anchor-mathematics.md) for the
-specification worksheet.
+preserved formula, proposed contract, explicit rejection outcomes, and open
+decisions.

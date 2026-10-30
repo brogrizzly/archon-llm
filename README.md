@@ -3,10 +3,11 @@
 Archon is an open-source language-model project. **Anchor** is the name for
 its mathematical foundation.
 
-> **Status: project foundation.** Archon is not yet a trained or runnable
-> language model. Anchor's equations and the model architecture have not yet
-> been specified. This repository keeps those unknowns explicit rather than
-> presenting guesses as design decisions.
+> **Status: specification stage.** Archon is not yet a trained or runnable
+> language model. The supplied G4LO formula is recorded, but its execution
+> semantics remain incomplete; the model architecture has not been selected.
+> This repository keeps those unknowns explicit rather than presenting guesses
+> as design decisions.
 
 ## Project areas
 
@@ -19,7 +20,7 @@ its mathematical foundation.
 | Area | Status |
 | --- | --- |
 | Project name and relationship | Archon is the model project; Anchor is its math |
-| Anchor equations | Not specified |
+| Anchor formula | G4LO formula supplied; `Pi`, numerator semantics, and numeric policy unresolved |
 | Model architecture | Not specified |
 | Training and inference code | Not implemented |
 | Weights and evaluations | None |
@@ -36,7 +37,8 @@ its mathematical foundation.
 
 There is no runnable model yet. Begin with the specifications in
 [`anchor/README.md`](anchor/README.md) and [`archon/README.md`](archon/README.md).
-Implementation should follow once the equations and architecture are agreed.
+Implementation should follow once the Anchor semantics and model architecture
+are agreed.
 
 ## License
 

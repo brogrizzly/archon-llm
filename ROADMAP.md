@@ -7,8 +7,10 @@ not silently decide the math.
 
 - [x] Establish the Archon and Anchor names and their relationship.
 - [x] Create a public project overview and transparent initial model card.
+- [x] Record the supplied G4LO formula and separate it from proposed runtime rules.
 - [ ] Define the problem Archon is intended to solve.
-- [ ] Specify Anchor mathematically and review the definition.
+- [ ] Resolve Anchor's `Pi`, numerator interpretation, coordinate encodings,
+  scales, and threshold policy; review the executable specification.
 - [ ] Select an initial architecture and explain how it uses Anchor.
 
 ## First reproducible prototype
