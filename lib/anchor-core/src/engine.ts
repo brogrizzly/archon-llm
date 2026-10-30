@@ -381,7 +381,8 @@ export class AnchorCore {
     now?: () => number;
   }) {
     this.ledger = options.ledger;
-    this.policy = deepFreeze(clone(options.policy));
+    validatePolicy(options.policy);
+    this.policy = deepFreeze(structuredClone(options.policy));
     if (options.mathOperator) {
       const operator = options.mathOperator;
       const evaluateOperator = operator.evaluate.bind(operator);

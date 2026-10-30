@@ -381,6 +381,18 @@ describe("deterministic Anchor core", () => {
     const valid = await batchFromCurrentState(core, {
       participantIds: ["p-0"],
     });
+    const atLimit = await batchFromCurrentState(core, {
+      participantIds: Array.from({ length: 11 }, (_, index) => `p-${index}`),
+    });
+    for (const participant of atLimit.participants) {
+      participant.coordinates.x.value = 1;
+    }
+    const atLimitResult = await core.prepare(atLimit);
+    assert.equal(atLimitResult.ok, true);
+    if (atLimitResult.ok) {
+      assert.equal(atLimitResult.value.participantCount, 11);
+    }
+
     const tooMany = {
       ...valid,
       participants: Array.from({ length: 12 }, (_, index) => ({
