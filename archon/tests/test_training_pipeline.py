@@ -10,6 +10,12 @@ import torch
 
 from archon.config import ModelConfig, candidate_config
 from archon.data_pipeline import load_and_split
+from archon.inference import (
+    InferenceFailure,
+    generate_text,
+    load_inference_model,
+    run_request,
+)
 from archon.model import ArchonDecoder
 from archon.tokenizer import ByteBPE
 from archon.train import train
@@ -99,9 +105,33 @@ class PilotComponentTests(unittest.TestCase):
             }
             first_report = train(Namespace(**options, run_dir=str(first_run)))
             self.assertTrue((first_run / "last.pt").is_file())
+            self.assertTrue((first_run / "inference.pt").is_file())
             self.assertTrue((first_run / "evaluation.json").is_file())
             self.assertEqual(first_report["completed_steps"], 2)
             self.assertEqual(first_report["tokenizer_training_partition"], "train-only")
+
+            inference_model, inference_tokenizer, model_digest = load_inference_model(
+                first_run
+            )
+            generated_text, finish_reason = generate_text(
+                inference_model,
+                inference_tokenizer,
+                "Answer:",
+                max_new_tokens=3,
+            )
+            self.assertIsInstance(generated_text, str)
+            self.assertIn(finish_reason, {"eos", "max_new_tokens", "context_limit"})
+            self.assertEqual(len(model_digest), 64)
+            response = run_request(
+                first_run,
+                {"prompt": "Answer:", "max_new_tokens": 3},
+            )
+            self.assertTrue(response["ok"])
+            self.assertIn(response["result"]["finish_reason"], {
+                "eos",
+                "max_new_tokens",
+                "context_limit",
+            })
 
             resumed_report = train(
                 Namespace(**{**options, "resume": True}, run_dir=str(first_run))
@@ -128,6 +158,12 @@ class PilotComponentTests(unittest.TestCase):
                     rtol=0,
                     atol=0,
                 )
+
+    def test_missing_checkpoint_fails_explicitly(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(InferenceFailure) as context:
+                load_inference_model(Path(directory))
+        self.assertEqual(context.exception.code, "CHECKPOINT_UNAVAILABLE")
 
 
 if __name__ == "__main__":

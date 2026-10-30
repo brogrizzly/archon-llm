@@ -109,6 +109,8 @@ def save_checkpoint(
     global_step: int,
     checkpoint_metadata: dict[str, Any],
 ) -> None:
+    inference_path = path.parent / "inference.pt"
+    inference_path.unlink(missing_ok=True)
     payload = {
         **checkpoint_metadata,
         "global_step": global_step,
@@ -120,6 +122,18 @@ def save_checkpoint(
     temporary = path.with_suffix(path.suffix + ".tmp")
     torch.save(payload, temporary)
     os.replace(temporary, path)
+
+    inference_payload = {
+        "format": "archon-pilot-inference-v1",
+        "global_step": global_step,
+        "training_digest": checkpoint_metadata["training_digest"],
+        "tokenizer_sha256": checkpoint_metadata["tokenizer_sha256"],
+        "model_config": checkpoint_metadata["model_config"],
+        "model_state": model.state_dict(),
+    }
+    inference_temporary = inference_path.with_suffix(inference_path.suffix + ".tmp")
+    torch.save(inference_payload, inference_temporary)
+    os.replace(inference_temporary, inference_path)
 
 
 def resolve_path(value: str) -> Path:

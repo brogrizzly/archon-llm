@@ -70,6 +70,11 @@ normalized_delta[i,j] = delta[i,j] / scale[j]
 denominator[i] = sqrt(sum_j(normalized_delta[i,j] ** 2))
 ```
 
+The classical two-dimensional right-triangle relation is cited as historical
+context (Euclid 1.47). That proposition does not state the six-coordinate norm
+or the G4LO equation; the six-coordinate denominator above remains a
+project-proposed operational rule.
+
 Each `scale[j]` must be declared, finite, strictly positive, and expressed in
 the same unit as its coordinate. The coordinate encoding, frame, scale, and
 their versions must be pinned for an evaluation. No default scales or silent
@@ -192,6 +197,19 @@ without a definition and derivation.
   the discrete participant cap?
 - What mathematical role does G4LO play in Archon beyond structuring state
   inputs, training examples, and deterministic evaluation?
+
+## 9. Citation and attribution
+
+The citation `(Euclid 1.47)` identifies Book I, Proposition 47 of *The
+Elements*. It supports the classical Pythagorean relationship for right
+triangles only. It does not establish G4LO, its six-coordinate extension,
+normalization, `Pi`, or any convergence claim.
+
+The G4LO formula and coordinate meanings preserved in this document were
+supplied by the project owner. No source establishing their derivation from
+Euclid has been provided, so they are not attributed to Euclid. The MLA 9
+reference and source-credit note are in
+[`works-cited.md`](works-cited.md).
 
 ## Version history
 

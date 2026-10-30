@@ -16,6 +16,7 @@ its mathematical foundation.
 - [`archon/`](archon/README.md) — candidate configuration and independent
   tokenizer/model training code.
 - [`docs/`](docs/) — project scope, model card, pilot evaluation, and roadmap.
+- [`docs/works-cited.md`](docs/works-cited.md) — MLA 9 reference and source credit.
 
 ## Current status
 

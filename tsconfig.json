@@ -10,6 +10,9 @@
       "path": "./lib/anchor-core"
     },
     {
+      "path": "./lib/archon-inference"
+    },
+    {
       "path": "./lib/api-client-react"
     },
     {

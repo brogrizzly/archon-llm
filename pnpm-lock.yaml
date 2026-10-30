@@ -432,6 +432,19 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
 
+  lib/archon-inference:
+    dependencies:
+      '@workspace/anchor-core':
+        specifier: workspace:*
+        version: link:../anchor-core
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.9
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
+
   lib/db:
     dependencies:
       drizzle-orm:

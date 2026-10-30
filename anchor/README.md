@@ -32,4 +32,5 @@ normative definition.
 
 See [`../docs/anchor-mathematics.md`](../docs/anchor-mathematics.md) for the
 preserved formula, proposed contract, explicit rejection outcomes, and open
-decisions.
+decisions. The historical source and attribution limits are listed in
+[`../docs/works-cited.md`](../docs/works-cited.md).

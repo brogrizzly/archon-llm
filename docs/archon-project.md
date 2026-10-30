@@ -38,7 +38,10 @@ Build and document an open-source language model named **Archon**, with
 
 The G4LO formula supplied by the project owner is preserved in
 [`anchor-mathematics.md`](anchor-mathematics.md). Its execution contract remains
-proposed and incomplete; no missing semantics are inferred.
+proposed and incomplete; no missing semantics are inferred. The historical
+Euclid reference and source-credit boundary are documented in
+[`works-cited.md`](works-cited.md); Euclid is not credited as the source of
+G4LO.
 
 These are open questions, not implied decisions. Update this brief when the
 project owner makes them.

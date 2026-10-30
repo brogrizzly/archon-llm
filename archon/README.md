@@ -11,6 +11,11 @@ independently trained byte-BPE tokenizer. This is a pipeline validation, not a
 useful or released language model. It uses only the original project-authored
 fixture at [`data/pilot_corpus.txt`](data/pilot_corpus.txt).
 
+An opt-in local inference prototype now exists for testing the guarded
+Archon-to-Anchor proposal boundary. It requires a locally trained
+`inference.pt` checkpoint; no inference-ready checkpoint is currently included
+or released. The pilot remains unsuitable for general-purpose use.
+
 The proposed 32-layer, 2,013,399,040-parameter model is recorded in
 [`configs/candidate-2b.json`](configs/candidate-2b.json) as
 `candidate-not-approved`. Its parameter count matches both the analytical
@@ -72,4 +77,6 @@ mixed-precision AdamW setup can require roughly 32.2 GB for parameters,
 gradients, master weights, and optimizer moments before activations, buffers,
 and runtime overhead. Full-scale GPU hardware and throughput must be separately
 provisioned and benchmarked. The pilot does not attempt full-scale training,
-quantization, or user-facing inference.
+quantization, or a user-facing inference service. The local proposal adapter and
+its resource requirements are documented in
+[`../docs/archon-inference.md`](../docs/archon-inference.md).

@@ -8,7 +8,8 @@ production model or releasable checkpoint exists.
 - **Name:** Archon
 - **Model type:** independently trained language-model project
 - **Mathematical foundation:** Anchor; no Anchor operator is inferred or used
-  by the pilot's language-model loss
+  by the pilot's language-model loss. The historical Euclid reference and
+  project-source credit are scoped in [`works-cited.md`](works-cited.md).
 - **Pilot:** 2-layer causal Transformer, 94,528 trainable parameters
 - **Large architecture:** proposed candidate only; 2,013,399,040 parameters
   verified by formula and implementation-graph accounting, not trained
@@ -55,7 +56,9 @@ Full settings and limitations are in
 ## Limitations and risks
 
 - The tiny authored corpus does not represent a broad language distribution.
-- There is no user-facing inference interface or quantized checkpoint.
+- A local, opt-in guarded inference prototype exists, but no inference-ready
+  checkpoint is included or released. There is no public inference service or
+  quantized checkpoint.
 - No safety, truthfulness, instruction-following, or domain-quality evaluation
   has been conducted.
 - Anchor's `Pi` operator, numerator semantics, and any role in a model objective
