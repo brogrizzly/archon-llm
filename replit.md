@@ -1,6 +1,6 @@
-# [Project name]
+# Archon
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Archon is an open-source language-model project; Anchor is the name for its mathematical foundation.
 
 ## Run & Operate
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `README.md` — project overview and current status
+- `anchor/` — Anchor mathematics source of truth and future implementation
+- `archon/` — model specification and future implementation
+- `docs/` — project brief, math worksheet, and model card
+- `ROADMAP.md` — staged specification and implementation work
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The mathematical definition and the model implementation must remain distinct and traceable.
+- Unspecified equations, architecture, data, and evaluation details must be marked as open rather than filled in by assumption.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The project is currently documentation only. No runnable or trained model exists yet.
 
 ## User preferences
 
