@@ -279,7 +279,7 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
         "seed": config_document["seed"],
         "corpus_path": source_path.relative_to(REPOSITORY_ROOT).as_posix(),
         "corpus_sha256": splits.corpus_sha256,
-        "license_note": "Original project-authored fixture; CC0 1.0, pending owner review.",
+        "license_note": "Original project-authored fixture; owner-confirmed CC0 1.0.",
         "split_counts": {
             "train_documents": len(splits.train),
             "validation_documents": len(splits.validation),
@@ -364,7 +364,7 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
         "validation_at_run_start": validation_at_run_start,
         "test": test_metrics,
         "limitations": [
-            "This is a small pipeline smoke test, not a useful language model.",
+            "This is a small training-pipeline pilot, not a useful language model.",
             "The project-authored corpus is tiny and synthetic; metrics are not general benchmarks.",
             "No broad pretraining corpus, GPU, or full-scale training run was used.",
             "No Anchor math is inferred or integrated into the language-model objective.",

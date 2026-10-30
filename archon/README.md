@@ -11,10 +11,10 @@ independently trained byte-BPE tokenizer. This is a pipeline validation, not a
 useful or released language model. It uses only the original project-authored
 fixture at [`data/pilot_corpus.txt`](data/pilot_corpus.txt).
 
-An opt-in local inference prototype now exists for testing the guarded
-Archon-to-Anchor proposal boundary. It requires a locally trained
-`inference.pt` checkpoint; no inference-ready checkpoint is currently included
-or released. The pilot remains unsuitable for general-purpose use.
+An opt-in local inference prototype exists for testing the guarded
+Archon-to-Anchor proposal boundary. Reproducibility-only inference checkpoints
+are included under `checkpoints/`; they are not approved or suitable for
+general-purpose use.
 
 The proposed 32-layer, 2,013,399,040-parameter model is recorded in
 [`configs/candidate-2b.json`](configs/candidate-2b.json) as
@@ -37,7 +37,7 @@ python -m archon.train --run-dir archon/runs/pilot
 In this Replit workspace, where PyTorch is installed in `.pythonlibs`, use
 `./.pythonlibs/bin/python` in place of `python`.
 
-The default run uses seed `7331`, one CPU thread, 80 AdamW steps, batch size 8,
+The default smoke-test run uses seed `7331`, one CPU thread, 80 AdamW steps, batch size 8,
 context length 64, learning rate `0.001`, weight decay `0.01`, and gradient
 clipping at `1.0`. It starts with newly initialized weights, trains the BPE
 tokenizer only on the training partition, and saves checkpoints and a
@@ -56,6 +56,19 @@ python -m archon.train --steps 2 --run-dir /tmp/archon-smoke
 See [`../docs/pilot-evaluation.md`](../docs/pilot-evaluation.md) for the
 measured run and its limitations. Dataset provenance and the declared license
 are in [`data/README.md`](data/README.md).
+
+The extended 2,000-step CPU pipeline run can be reproduced with:
+
+```sh
+python -m archon.train \
+  --config archon/configs/extended-cpu-pilot.json \
+  --run-dir archon/checkpoints/extended-cpu-pilot
+```
+
+Its held-out test score was worse than the 80-step smoke test. Neither is a
+useful language model; the full-scale architecture, rights-cleared corpus, and
+compute plan remain unselected. See
+[`../docs/archon-v0-pretraining-plan.md`](../docs/archon-v0-pretraining-plan.md).
 
 ## Candidate architecture and scale boundary
 
