@@ -15,14 +15,20 @@ not silently decide the math.
 
 ## First reproducible prototype
 
-- [ ] Choose implementation framework and supported hardware.
-- [ ] Implement Anchor with reference tests.
-- [ ] Implement a small, reproducible Archon prototype.
-- [ ] Document tokenizer, data provenance, training recipe, and compute.
-- [ ] Evaluate the prototype and publish limitations with results.
+- [x] Use PyTorch for a reproducible CPU pilot; full-scale GPU hardware remains
+  unselected and must be benchmarked separately.
+- [x] Implement Anchor with reference tests.
+- [x] Implement a small, reproducible Archon prototype with an independent
+  tokenizer and random initialization.
+- [x] Document tokenizer, pilot data declaration, training recipe, and
+  full-scale compute limits.
+- [x] Evaluate the pilot on held-out data and publish measured limitations.
 
 ## Open release
 
 - [ ] Review dataset, dependency, and model-weight licenses.
+- [ ] Select or reject the candidate architecture after design review.
+- [ ] Acquire and review a broad rights-cleared corpus and provisioned,
+  benchmarked GPU resources for any full-scale pretraining.
 - [ ] Add reproducible training and inference instructions.
 - [ ] Publish versioned specifications, code, and any releasable artifacts.

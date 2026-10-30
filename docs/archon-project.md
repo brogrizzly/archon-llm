@@ -11,6 +11,11 @@ Build and document an open-source language model named **Archon**, with
 - The model project is named Archon.
 - Its math is named Anchor.
 - The intent is to document and build it as open source.
+- A small CPU training pilot uses random initialization and an independently
+  trained byte-BPE tokenizer.
+- The 32-layer, approximately 2B dense decoder configuration remains a
+  candidate; its 2,013,399,040 parameter count has been checked against the
+  implementation without allocating full weights.
 
 ## Not yet specified
 
@@ -20,7 +25,14 @@ Build and document an open-source language model named **Archon**, with
 - Any convergence or other theoretical claim beyond the supplied formula.
 - Whether Anchor defines a new architecture, an objective, a training method,
   or another part of the system.
-- Architecture, tokenizer, training data, compute budget, and evaluation plan.
+- Whether the large candidate architecture is selected for Archon.
+- A broad pretraining corpus, its provenance, licenses, filtering, and permitted
+  use.
+- Full-scale compute budget and hardware; the current environment has no CUDA
+  GPU.
+- Evaluation plan for any released or user-facing model.
+- The pilot's intended use is limited to testing the training pipeline; it is
+  not a general-purpose model.
 - Whether “/anchor” is intended as a mathematical name only or also a public
   URL/package path; this repository uses `anchor/` for the math area.
 

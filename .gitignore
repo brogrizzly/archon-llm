@@ -16,6 +16,12 @@ out-tsc
 
 # dependencies
 node_modules
+/.pythonlibs/
+__pycache__/
+*.py[cod]
+
+# Model-training outputs
+/archon/runs/
 
 # IDEs and editors
 /.idea

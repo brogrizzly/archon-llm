@@ -10,10 +10,17 @@ Archon is an open-source language-model project; Anchor is the name for its math
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- `python -m archon.validate_candidate` — validate the proposed 2B model count
+- `python -m unittest discover -s archon/tests -v` — test the pilot pipeline
+- `python -m archon.train --run-dir archon/runs/pilot` — run the CPU pilot
+- In this Replit workspace, use `./.pythonlibs/bin/python` instead of `python`
+  for those commands.
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Python 3.13 for the independent Archon training pilot; PyTorch is pinned in
+  `archon/requirements.txt`
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -35,7 +42,8 @@ Archon is an open-source language-model project; Anchor is the name for its math
 
 ## Product
 
-The project is currently documentation only. No runnable or trained model exists yet.
+The project includes a small runnable training pilot. No full-scale model,
+general-purpose weights, or release checkpoint exists.
 
 ## User preferences
 
