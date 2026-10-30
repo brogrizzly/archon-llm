@@ -1,0 +1,1 @@
+- [Model deltas vs. G4LO WeightDelta](model-weight-delta-boundary.md) — Keep neural parameter adapters separate from G4LO's provenance-bound state-change records.
