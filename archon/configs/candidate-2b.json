@@ -1,0 +1,21 @@
+{
+  "name": "archon-dense-decoder-candidate-v1",
+  "status": "candidate-not-approved",
+  "architecture": {
+    "type": "dense-decoder-only-causal-transformer",
+    "layers": 32,
+    "hidden_size": 2048,
+    "intermediate_size": 8192,
+    "attention_heads": 16,
+    "key_value_heads": 4,
+    "head_dimension": 128,
+    "vocabulary_size": 32768,
+    "position_encoding": "RoPE",
+    "normalization": "two-pre-RMSNorm-per-block-plus-final-RMSNorm",
+    "feed_forward": "SwiGLU",
+    "linear_biases": false,
+    "tied_input_output_embeddings": true,
+    "context_length": 4096,
+    "claimed_parameters": 2013399040
+  }
+}

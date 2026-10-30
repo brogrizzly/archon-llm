@@ -1,0 +1,372 @@
+{
+  "corpus_path": "archon/data/pilot_corpus.txt",
+  "corpus_sha256": "843dec3e3e1b2dbb2a80437c34e4c19afa4ef1f73e5868eb8ec02e70a25632d8",
+  "device": "cpu",
+  "hardware": {
+    "cuda_available": false,
+    "logical_cpu_count": 4,
+    "machine": "x86_64",
+    "torch_threads": 1
+  },
+  "license_note": "Project owner confirmed public release of corpus and derived pilot artifacts under CC0 1.0 on 2026-10-30.",
+  "model_config": {
+    "attention_heads": 4,
+    "context_length": 64,
+    "head_dimension": 16,
+    "hidden_size": 64,
+    "intermediate_size": 128,
+    "key_value_heads": 2,
+    "layers": 2,
+    "rms_norm_eps": 1e-06,
+    "rope_base": 10000.0,
+    "vocabulary_size": 320
+  },
+  "parameter_count": 94528,
+  "project": "Archon independent pilot",
+  "python_version": "3.13.11",
+  "seed": 7331,
+  "split_counts": {
+    "test_documents": 7,
+    "test_tokens": 406,
+    "train_documents": 50,
+    "train_tokens": 2896,
+    "validation_documents": 6,
+    "validation_tokens": 330
+  },
+  "split_sha256": {
+    "test": "3929985b424a548738103f9e580dd3db89465f5300f46ef3f798377f7fe35831",
+    "train": "c2fa01daff2a9e0b273ca8126b9524aaebbd9d7e87ea5caf044463145cdfbbc4",
+    "validation": "b1fc991077fe6205e8414f8bf41e50f09229e52f5c79cc199e77c992830b8cc1"
+  },
+  "status": "small random-initialization pilot",
+  "tokenizer": {
+    "bos_id": 256,
+    "eos_id": 257,
+    "format": "archon-byte-bpe-v1",
+    "merges": [
+      [
+        101,
+        32,
+        258
+      ],
+      [
+        100,
+        32,
+        259
+      ],
+      [
+        115,
+        32,
+        260
+      ],
+      [
+        105,
+        110,
+        261
+      ],
+      [
+        97,
+        116,
+        262
+      ],
+      [
+        116,
+        32,
+        263
+      ],
+      [
+        97,
+        110,
+        264
+      ],
+      [
+        101,
+        110,
+        265
+      ],
+      [
+        111,
+        110,
+        266
+      ],
+      [
+        101,
+        114,
+        267
+      ],
+      [
+        97,
+        114,
+        268
+      ],
+      [
+        105,
+        266,
+        269
+      ],
+      [
+        111,
+        114,
+        270
+      ],
+      [
+        114,
+        101,
+        271
+      ],
+      [
+        32,
+        116,
+        272
+      ],
+      [
+        97,
+        108,
+        273
+      ],
+      [
+        105,
+        116,
+        274
+      ],
+      [
+        101,
+        259,
+        275
+      ],
+      [
+        111,
+        117,
+        276
+      ],
+      [
+        261,
+        103,
+        277
+      ],
+      [
+        264,
+        259,
+        278
+      ],
+      [
+        32,
+        99,
+        279
+      ],
+      [
+        104,
+        258,
+        280
+      ],
+      [
+        114,
+        111,
+        281
+      ],
+      [
+        101,
+        108,
+        282
+      ],
+      [
+        32,
+        115,
+        283
+      ],
+      [
+        262,
+        269,
+        284
+      ],
+      [
+        44,
+        32,
+        285
+      ],
+      [
+        101,
+        115,
+        286
+      ],
+      [
+        105,
+        122,
+        287
+      ],
+      [
+        101,
+        99,
+        288
+      ],
+      [
+        111,
+        100,
+        289
+      ],
+      [
+        111,
+        263,
+        290
+      ],
+      [
+        114,
+        97,
+        291
+      ],
+      [
+        121,
+        32,
+        292
+      ],
+      [
+        97,
+        32,
+        293
+      ],
+      [
+        291,
+        261,
+        294
+      ],
+      [
+        84,
+        280,
+        295
+      ],
+      [
+        107,
+        265,
+        296
+      ],
+      [
+        111,
+        296,
+        297
+      ],
+      [
+        116,
+        105,
+        298
+      ],
+      [
+        104,
+        276,
+        299
+      ],
+      [
+        105,
+        103,
+        300
+      ],
+      [
+        105,
+        260,
+        301
+      ],
+      [
+        109,
+        289,
+        302
+      ],
+      [
+        277,
+        32,
+        303
+      ],
+      [
+        302,
+        282,
+        304
+      ],
+      [
+        101,
+        260,
+        305
+      ],
+      [
+        100,
+        262,
+        306
+      ],
+      [
+        108,
+        259,
+        307
+      ],
+      [
+        112,
+        268,
+        308
+      ],
+      [
+        102,
+        270,
+        309
+      ],
+      [
+        110,
+        290,
+        310
+      ],
+      [
+        112,
+        111,
+        311
+      ],
+      [
+        112,
+        117,
+        312
+      ],
+      [
+        112,
+        281,
+        313
+      ],
+      [
+        116,
+        260,
+        314
+      ],
+      [
+        265,
+        263,
+        315
+      ],
+      [
+        299,
+        307,
+        316
+      ],
+      [
+        99,
+        104,
+        317
+      ],
+      [
+        101,
+        100,
+        318
+      ],
+      [
+        101,
+        116,
+        319
+      ]
+    ],
+    "vocab_size": 320
+  },
+  "tokenizer_training_partition": "train-only",
+  "torch_version": "2.15.0+cpu",
+  "training_config": {
+    "batch_size": 8,
+    "checkpoint_every": 20,
+    "device": "cpu",
+    "learning_rate": 0.001,
+    "steps": 80,
+    "threads": 1,
+    "weight_decay": 0.01
+  },
+  "training_digest": "058120713893353c34bdec31b888fc1e611405554f5ed3062153adb5e4e9d1f7"
+}

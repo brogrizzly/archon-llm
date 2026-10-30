@@ -1,0 +1,63 @@
+Archon is an open language model project. Anchor is the name of its mathematical foundation.
+A training run should record its source data, license, tokenizer, configuration, seed, and software versions.
+The next-token objective predicts the token that follows a visible prefix of tokens.
+Training, validation, and test examples have different purposes and should not be mixed.
+A validation score can guide development, while a test score should be reserved for a final report.
+The model in this pilot begins with random parameter values and learns only from the included passages.
+The tokenizer is trained from the training partition rather than borrowed from another model.
+A byte-level tokenizer can represent every UTF-8 input even when a word was not seen during training.
+Byte pair encoding repeatedly joins frequent adjacent token pairs into new vocabulary entries.
+Each tokenizer merge is learned from training text and stored in a reproducible order.
+The model uses a causal mask so a position cannot attend to tokens that occur later.
+Rotary position encoding represents relative position through rotations of paired query and key values.
+Grouped query attention shares key and value heads across several query heads.
+RMSNorm rescales hidden activations using their root mean square.
+SwiGLU combines a gated activation with two input projections and one output projection.
+Tied embeddings use the same learned matrix for input tokens and output vocabulary scores.
+The pilot configuration is deliberately much smaller than the proposed full-scale candidate.
+An exact parameter count is necessary before a model configuration is treated as valid.
+The proposed large configuration is a candidate and not a selected or trained model.
+The candidate parameter count includes token embeddings, attention projections, feed-forward weights, and normalization scales.
+RoPE has no learned parameters in the parameter accounting used by this project.
+The independent pilot does not load model weights or configuration from an existing language model.
+It does not use generated answers from another model as training targets.
+A checkpoint should include model weights, optimizer state, random number state, and completed step count.
+Saving checkpoints atomically helps avoid replacing a usable checkpoint with a partial file.
+An interrupted run can resume from its saved optimizer and random number states.
+The same seed, corpus bytes, configuration, and software environment make a CPU pilot repeatable.
+Deterministic execution does not guarantee bitwise equality across different hardware and library versions.
+The held-out evaluation reports token-level cross entropy and perplexity for a small test partition.
+Perplexity on a tiny synthetic corpus is not a general language benchmark.
+The pilot report must state its data size, measured steps, hardware, and limitations.
+The full pretraining plan needs a broad corpus with documented rights and filtering.
+Every dataset should have a recorded origin, license, version, and allowed-use review.
+Personal information should not be added to a training corpus without an approved basis.
+Repeated examples can make training loss look better without showing broader learning.
+Evaluation examples should not be copied into the training partition.
+Loss is an optimization measurement and is not proof of truthfulness or safe behavior.
+A language model can produce an incorrect answer even when its training loss decreases.
+Anchor's mathematical definition and a language-model objective are separate project concerns.
+The current pilot does not infer missing Anchor equations or claim that the model uses Anchor at runtime.
+Human review remains necessary before any model output could affect persistent state.
+An optimizer updates model parameters using gradients from the training objective.
+The learning rate controls the size of optimizer updates and should be recorded.
+The training loop evaluates validation data without updating model parameters.
+The test partition is evaluated after the pilot and is never used for gradient updates.
+A readable manifest links a checkpoint to its corpus digest and tokenizer digest.
+Token counts and partition sizes make small data experiments easier to compare.
+The CPU environment can run a small pilot but does not provide suitable full-scale training compute.
+A two-billion-parameter training run needs substantially more memory than its packed weight file alone.
+Optimizer state, gradients, activations, temporary buffers, and checkpoints add memory requirements.
+Hardware requirements should be benchmarked with the selected context length and batch size.
+GPU throughput measurements should precede any schedule or full-pretraining cost estimate.
+The proposed context length is four thousand ninety-six tokens and still needs a workload benchmark.
+Quantization should be evaluated after training and should preserve the original unquantized checkpoint.
+An open-source release should include code, versioned settings, data rights notes, and measured limitations.
+The pilot uses no external pretraining corpus and is not intended for user-facing inference.
+Random initialization means no pretrained parameter tensors are loaded before the first optimizer step.
+All tokens in a batch are shifted by one position to form next-token prediction targets.
+The evaluation denominator is the number of held-out target tokens, not the number of batches.
+A small corpus is useful for checking code paths but not for estimating production quality.
+Data separation is performed before tokenizer training to keep held-out vocabulary unseen during BPE fitting.
+Files produced by training are local artifacts and should not be committed as model releases.
+An independent model requires independent data, tokenizer training, configuration, and random initialization.

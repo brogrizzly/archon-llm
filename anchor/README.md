@@ -1,0 +1,36 @@
+# Anchor
+
+Anchor is the name of the mathematical foundation associated with Archon.
+This directory is the source of truth for its formal definition.
+
+## Status
+
+The supplied G4LO formula is recorded in
+[`../docs/anchor-mathematics.md`](../docs/anchor-mathematics.md). Its proposed
+execution contract is incomplete: `Pi`, numerator normalization, coordinate
+encodings, scales, and threshold policy remain unresolved. The formula is not
+yet executable, and no convergence claim is made.
+
+## Specification checklist
+
+Before implementing Anchor, resolve and document:
+
+- the problem it is intended to solve;
+- notation, tensor shapes, and variable domains;
+- assumptions and constraints;
+- the equations, including boundary cases;
+- how it relates to the language-model architecture;
+- expected computational cost and numerical considerations;
+- reference examples and tests that can independently verify the equations.
+
+## Change process
+
+When a definition is proposed, label it as a proposal until reviewed. Give each
+accepted mathematical specification a version and record changes that alter
+its behavior. Keep derivations and implementation notes separate from the
+normative definition.
+
+See [`../docs/anchor-mathematics.md`](../docs/anchor-mathematics.md) for the
+preserved formula, proposed contract, explicit rejection outcomes, and open
+decisions. The historical source and attribution limits are listed in
+[`../docs/works-cited.md`](../docs/works-cited.md).
