@@ -58,7 +58,7 @@ catalogs:
       specifier: ^4.1.14
       version: 4.3.3
     tsx:
-      specifier: ^4.21.0
+      specifier: 4.23.15
       version: 4.23.15
     vite:
       specifier: ^7.3.2
@@ -404,6 +404,15 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  lib/anchor-core:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.9
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
 
   lib/api-client-react:
     dependencies:
