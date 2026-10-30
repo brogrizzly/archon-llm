@@ -1,7 +1,7 @@
 # Archon model card
 
 **Status:** small independent training-pipeline pilot completed; no
-production model or releasable checkpoint exists.
+production or general-purpose model exists.
 
 ## Overview
 
@@ -13,8 +13,9 @@ production model or releasable checkpoint exists.
 - **Pilot:** 2-layer causal Transformer, 94,528 trainable parameters
 - **Large architecture:** proposed candidate only; 2,013,399,040 parameters
   verified by formula and implementation-graph accounting, not trained
-- **Checkpoint release:** none; generated pilot checkpoint is an ignored local
-  artifact
+- **Pilot artifact:** published at
+  [`../archon/checkpoints/pilot-smoke-test/`](../archon/checkpoints/pilot-smoke-test/)
+  under CC0 1.0; this is not a production or general-purpose model release
 
 ## Intended use
 
@@ -26,8 +27,9 @@ state-changing workflows.
 ## Training data and process
 
 The pilot uses 63 original short passages written for this repository. The
-corpus is declared CC0 1.0 in [`../archon/data/README.md`](../archon/data/README.md);
-project-owner review is requested before redistribution. It uses no external
+project owner confirmed public release of the corpus and derived pilot
+artifacts under CC0 1.0; see
+[`../archon/data/README.md`](../archon/data/README.md). It uses no external
 pretraining data and no other model's weights, tokenizer, configuration, or
 distillation outputs.
 
@@ -56,9 +58,9 @@ Full settings and limitations are in
 ## Limitations and risks
 
 - The tiny authored corpus does not represent a broad language distribution.
-- A local, opt-in guarded inference prototype exists, but no inference-ready
-  checkpoint is included or released. There is no public inference service or
-  quantized checkpoint.
+- A tiny pilot inference checkpoint is included only to reproduce the pipeline
+  run. There is no production or quantized checkpoint, and no public inference
+  service.
 - No safety, truthfulness, instruction-following, or domain-quality evaluation
   has been conducted.
 - Anchor's `Pi` operator, numerator semantics, and any role in a model objective

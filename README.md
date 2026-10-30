@@ -26,9 +26,10 @@ its mathematical foundation.
 | Anchor formula | G4LO formula supplied; `Pi`, numerator semantics, and numeric policy unresolved |
 | Large architecture | Candidate count 2,013,399,040 matches the config and implementation; not approved or trained |
 | Small training pipeline | Reproducible two-layer CPU pilot, independent byte-BPE tokenizer, random initialization |
-| Pilot data | Tiny project-authored fixture with documented CC0 1.0 declaration |
+| Pilot data | Tiny project-authored fixture; public CC0 1.0 release confirmed |
 | Evaluation | Held-out token loss/perplexity measured; not a language-capability benchmark |
-| Released weights | None |
+| Pilot artifacts | Tiny 94,528-parameter smoke-test bundle included under CC0 1.0 |
+| Full-scale or production weights | None |
 
 ## Working principles
 
@@ -56,6 +57,14 @@ when running these commands.
 See [`archon/README.md`](archon/README.md) for settings and
 [`docs/pilot-evaluation.md`](docs/pilot-evaluation.md) for measured results and
 limitations.
+
+## Included pilot checkpoint
+
+For reproducibility, [`archon/checkpoints/pilot-smoke-test/`](archon/checkpoints/pilot-smoke-test/)
+contains the 80-step CPU pilot checkpoint, tokenizer, manifest, and evaluation
+record. It is a 94,528-parameter pipeline smoke test, not the proposed 2B model
+or a general-purpose language model. The corpus and derived pilot artifacts
+are released under CC0 1.0; source code remains under MIT.
 
 ## License
 

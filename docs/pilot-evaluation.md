@@ -25,8 +25,9 @@ held-out measurement.
 | Hardware | CPU only; x86_64; CUDA unavailable |
 | Elapsed training time | 0.864 seconds for this run; not a throughput benchmark |
 
-The input is 63 unique short passages written for this repository and declared
-CC0 1.0 in [`../archon/data/README.md`](../archon/data/README.md). The raw
+The input is 63 unique short passages written for this repository and released
+under CC0 1.0 as confirmed by the project owner in
+[`../archon/data/README.md`](../archon/data/README.md). The raw
 corpus SHA-256 is
 `843dec3e3e1b2dbb2a80437c34e4c19afa4ef1f73e5868eb8ec02e70a25632d8`.
 The deterministic split produced 50 train, 6 validation, and 7 test passages.
@@ -47,10 +48,13 @@ The high initial validation loss is recorded as measured; the small final
 scores on this synthetic corpus do not imply language capability. Test
 perplexity is only a token-level diagnostic for these 405 targets.
 
-The full machine-readable run manifest, checkpoint, tokenizer, and
-`evaluation.json` are written to the chosen `--run-dir`, which defaults to
-`archon/runs/pilot/` and is excluded from Git. The run manifest includes
-corpus and partition hashes, configuration, seed, and runtime versions.
+The training command writes its working outputs to the chosen `--run-dir`,
+which defaults to `archon/runs/pilot/` and is excluded from Git. A public,
+reproducibility-only copy of the manifest, both checkpoints, tokenizer, and
+`evaluation.json` is included in
+[`../archon/checkpoints/pilot-smoke-test/`](../archon/checkpoints/pilot-smoke-test/).
+The run manifest includes corpus and partition hashes, configuration, seed,
+and runtime versions.
 
 ## Candidate full-scale model validation
 
@@ -79,4 +83,5 @@ claim. Meta-device checking allocates no full-sized weights. The config remains
 - Full pretraining requires a broad corpus whose provenance, license, filtering,
   and permitted use are reviewed and documented, plus separately provisioned
   GPU hardware benchmarked at the intended 4096-token context.
-- No quantization, release checkpoint, or Anchor-integrated loss is included.
+- No quantization, full-scale release checkpoint, or Anchor-integrated loss is
+  included. The only published checkpoint is the tiny pilot smoke test.
