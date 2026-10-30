@@ -78,6 +78,9 @@ per head, RoPE, SwiGLU, bias-free linear layers, tied embeddings, vocabulary
 32768, and context length 4096. The proposed count is 2,013,399,040 trainable
 parameters. The executable validator checks both the formula and the model
 implementation without allocating full-size tensors.
+See [`../docs/archon-2b-parameter-ledger.md`](../docs/archon-2b-parameter-ledger.md)
+for the exact component-by-component derivation and the untied-embedding
+comparison.
 
 Passing parameter accounting does not select or approve the candidate. The
 pilot configuration is separately defined in

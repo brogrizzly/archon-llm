@@ -1,4 +1,3 @@
 - [Model deltas vs. G4LO WeightDelta](model-weight-delta-boundary.md) — Keep neural parameter adapters separate from G4LO's provenance-bound state-change records.
 - [Archon origin](archon-origin.md) — The owner considers 30 Oct. 2026 (Halloween Eve) a fitting project-origin date.
-- [Archon pretraining gate](archon-pretraining-readiness.md) — Do not select a base model or start full pretraining before compute, scale, and corpus rights are confirmed.
 - [4LO scope](4lo-scope.md) — 4LO already exists; treat it as a reference, not a new app to create by default.

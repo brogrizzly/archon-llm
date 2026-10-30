@@ -96,6 +96,9 @@ review by qualified counsel.
 - `docs/model-card.md`, `docs/archon-inference.md`,
   `docs/archon-v0-pretraining-plan.md`, and checkpoint manifests document the
   current architecture, training process, dependencies, hardware, and limits.
+- `docs/archon-2b-parameter-ledger.md` derives the candidate's exact count from
+  its configuration and module graph; update it with any shape or weight-tying
+  change.
 - The small pilot is not a base-model release. The 2B candidate remains
   unapproved; no full-scale run or production checkpoint exists.
 - Refresh the relevant evidence when architecture, weights, tokenizer,
