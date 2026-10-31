@@ -26,10 +26,17 @@ its mathematical foundation.
 | Anchor formula | G4LO formula supplied; `Pi`, numerator semantics, and numeric policy unresolved |
 | Large architecture | Candidate count 2,013,399,040 matches the config and implementation; not approved or trained |
 | Small training pipeline | Reproducible two-layer CPU pilot, independent byte-BPE tokenizer, random initialization |
+| Next representation | Direct UTF-8 byte pilot selected for planning; codec and new training run not implemented |
 | Pilot data | Tiny project-authored fixture; public CC0 1.0 release confirmed |
 | Evaluation | Held-out token loss/perplexity measured; not a language-capability benchmark |
 | Pilot artifacts | Tiny 94,528-parameter smoke-test bundle included under CC0 1.0 |
 | Full-scale or production weights | None |
+
+## Next direction
+
+See [the UTF-8 byte direction and agent handoff](docs/utf8-byte-direction.md)
+for the selected direction, proposed fixed codec, fresh-pilot plan, and
+validation criteria. The existing BPE pilot remains the published baseline.
 
 ## Working principles
 

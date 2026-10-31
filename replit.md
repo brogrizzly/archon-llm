@@ -35,6 +35,14 @@ Archon is an open-source language-model project; Anchor is the name for its math
 - `docs/` — project brief, math worksheet, and model card
 - `ROADMAP.md` — staged specification and implementation work
 
+## Current agent handoff
+
+The next pilot is planned around direct UTF-8 bytes with a fixed codec and no
+learned subword tokenizer. Read [docs/utf8-byte-direction.md](docs/utf8-byte-direction.md)
+and [AGENTS.md](AGENTS.md) before changing representation or training. The
+existing code and smoke-test bundle still use BPE; the byte pilot is not yet
+implemented. Preserve the published baseline and version the new work separately.
+
 ## Architecture decisions
 
 - The mathematical definition and the model implementation must remain distinct and traceable.
@@ -42,8 +50,10 @@ Archon is an open-source language-model project; Anchor is the name for its math
 
 ## Product
 
-The project includes a small runnable training pilot. No full-scale model,
-general-purpose weights, or release checkpoint exists.
+The project includes a small runnable BPE training pilot and a published
+smoke-test checkpoint for reproducibility. No full-scale, general-purpose,
+production, or quantized model release exists. The next byte pilot is planned
+in [docs/utf8-byte-direction.md](docs/utf8-byte-direction.md).
 
 ## User preferences
 

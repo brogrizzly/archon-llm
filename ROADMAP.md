@@ -24,6 +24,19 @@ not silently decide the math.
   full-scale compute limits.
 - [x] Evaluate the pilot on held-out data and publish measured limitations.
 
+## Next pilot: direct UTF-8 bytes
+
+Plan: [UTF-8 byte direction and agent handoff](docs/utf8-byte-direction.md).
+
+- [x] Select direct UTF-8 bytes as the next representation direction.
+- [ ] Version and test the fixed codec, framing, masks, and strict decoding.
+- [ ] Train and publish a separate reproducible byte pilot from random
+  initialization, preserving the existing BPE baseline.
+- [ ] Evaluate common held-out tasks, byte loss, memory, latency, and energy.
+- [ ] Integrate bounded proposals and evaluate safety and authorization.
+- [ ] Validate quantization/runtime support and recount any large candidate
+  before full-scale training or release claims.
+
 ## Open release
 
 - [ ] Review dataset, dependency, and model-weight licenses.
