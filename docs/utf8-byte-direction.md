@@ -94,6 +94,44 @@ sequences; energy or latency savings must be measured, not assumed.
 Keep hardware joules distinct from Anchor's `e` coordinate for human energy
 cost. Report measurement scope and uncertainty, including idle power.
 
+## First hardware targets: older phones and iPads
+
+**Owner direction recorded 2026-11-01:** Older mobile phones and iPads are
+the first on-device inference test targets. Exact device models, operating
+systems, available memory, and runtime support remain to be inventoried.
+This sets the test priority; it does not establish that the approximately
+2B model fits or runs acceptably on every older device.
+
+Start with the small byte pilot to verify the complete local path, then
+test progressively larger checkpoints toward the quantized 2B goal.
+Full-scale training remains a separate compute task. Publish a device
+matrix with model/chip, OS, RAM, battery condition when available, runtime
+and backend, checkpoint hash, quantization, context positions, input/output
+byte limits, and test conditions. Report native-app and browser results
+separately when both are evaluated.
+
+For each device, measure:
+
+- Cold loading, time to first visible text, complete-task latency, and UI
+  responsiveness, including cancellation.
+- Peak application memory and failures under memory pressure; account for
+  weights, KV cache, buffers, and the host application together.
+- Battery change over a declared interval and energy per completed task
+  where instrumentation supports it. Label estimates and unavailable
+  measurements; battery percentage alone is not a joule measurement.
+- Sustained performance and available thermal observations over repeated
+  tasks, with ambient and charging conditions recorded.
+- UTF-8 correctness, task quality, and safety/authorization behavior with
+  the exact quantized checkpoint and runtime.
+- Offline inference after installation, interruption/background recovery,
+  and clean handling of resource exhaustion without unauthorized commits.
+
+Define device-specific pass/fail budgets before benchmark runs. Begin with
+short bounded contexts and outputs, then measure larger settings. If the
+target exceeds a device budget, report that result and test a smaller model
+or context; do not silently fall back to cloud inference or claim 2B support.
+Keep the application usable with optional model inference disabled.
+
 ## Parameter accounting for the large-model discussion
 
 The current candidate uses 32 layers, hidden size 2,048, intermediate size
@@ -167,6 +205,17 @@ The following is planning data, not an executable model configuration:
     "approximate_parameters": 2000000000,
     "weight_quantization_target_bits": 4,
     "status": "future-validation-required"
+  },
+  "first_inference_test_targets": {
+    "priority": [
+      "older-mobile-phones",
+      "older-ipads"
+    ],
+    "exact_device_matrix": "to-be-inventoried",
+    "execution": "on-device-offline-after-installation",
+    "progression": "small-byte-pilot-then-larger-checkpoints-toward-quantized-2b",
+    "acceptance_budgets": "define-per-device-before-benchmark",
+    "compatibility_status": "not-yet-tested"
   }
 }
 ```
