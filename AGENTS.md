@@ -99,6 +99,9 @@ review by qualified counsel.
 - `docs/archon-2b-parameter-ledger.md` derives the candidate's exact count from
   its configuration and module graph; update it with any shape or weight-tying
   change.
+- `docs/utf8-byte-direction.md` records the planned direct-byte pilot and
+  device priority. Byte BPE remains the implementation until a separate codec
+  and pilot are built and validated.
 - The small pilot is not a base-model release. The 2B candidate remains
   unapproved; no full-scale run or production checkpoint exists.
 - Refresh the relevant evidence when architecture, weights, tokenizer,

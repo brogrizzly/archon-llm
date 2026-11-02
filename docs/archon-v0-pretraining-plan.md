@@ -34,6 +34,12 @@ No target architecture has been selected. The existing
 candidate, but it remains unapproved. Selecting it as the base-model target
 without an adequate corpus and benchmarked compute plan would be premature.
 
+The separate direct-UTF-8-byte pilot direction and first-device priorities
+(older phones and iPads) are recorded in
+[`utf8-byte-direction.md`](utf8-byte-direction.md). This is a planning
+document; byte BPE remains the implemented tokenizer until a separate codec
+and pilot are built and validated.
+
 The current machine is inadequate for that candidate. BF16 weights alone
 would occupy about 4.03 GB; a common mixed-precision AdamW setup is estimated
 at about 32.2 GB for parameters, gradients, master weights, and optimizer
