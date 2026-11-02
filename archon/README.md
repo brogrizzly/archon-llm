@@ -18,6 +18,12 @@ supports incremental byte streams. This codec is not used by the existing
 ByteBPE training or checkpoints. No byte-model training or byte-model checkpoint
 is included.
 
+The first-device plan targets the owner's iPhone 14 Plus, with older iPads
+secondary after the phone demonstration. It defines staged offline inference,
+measurement, Anchor approval, and restart-recovery gates; no mobile runtime or
+successful device run is claimed yet. See
+[`../docs/archon-first-device-validation.md`](../docs/archon-first-device-validation.md).
+
 An opt-in local inference prototype exists for testing the guarded
 Archon-to-Anchor proposal boundary. Reproducibility-only inference checkpoints
 are included under `checkpoints/`; they are not approved or suitable for

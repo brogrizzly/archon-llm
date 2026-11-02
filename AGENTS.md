@@ -102,6 +102,8 @@ review by qualified counsel.
 - `docs/utf8-byte-direction.md` records the planned direct-byte pilot and
   device priority. Byte BPE remains the implementation until a separate codec
   and pilot are built and validated.
+- `docs/archon-first-device-validation.md` records the owner's iPhone 14 Plus
+  target and the staged evidence required before claiming an on-device build.
 - The small pilot is not a base-model release. The 2B candidate remains
   unapproved; no full-scale run or production checkpoint exists.
 - Refresh the relevant evidence when architecture, weights, tokenizer,

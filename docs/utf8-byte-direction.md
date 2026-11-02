@@ -95,37 +95,25 @@ sequences; energy or latency savings must be measured, not assumed.
 Keep hardware joules distinct from Anchor's `e` coordinate for human energy
 cost. Report measurement scope and uncertainty, including idle power.
 
-## First hardware targets: older phones and iPads
+## First hardware target: iPhone 14 Plus
 
-**Owner direction recorded 2026-11-01:** Older mobile phones and iPads are
-the first on-device inference test targets. Exact device models, operating
-systems, available memory, and runtime support remain to be inventoried.
-This sets the test priority; it does not establish that the approximately
-2B model fits or runs acceptably on every older device.
+**Owner direction recorded 2026-11-02:** Start with the owner's iPhone 14 Plus
+(128 GB; iOS 27.0.1 as shown in the supplied About screenshot). Available
+storage, application memory, and battery health are not yet measured. Older
+iPads are secondary targets after the phone demonstration works.
 
-Start with the small byte pilot to verify the complete local path, then
-test progressively larger checkpoints toward the quantized 2B goal.
-Full-scale training remains a separate compute task. Publish a device
-matrix with model/chip, OS, RAM, battery condition when available, runtime
-and backend, checkpoint hash, quantization, context positions, input/output
-byte limits, and test conditions. Report native-app and browser results
-separately when both are evaluated.
+This is a target-device choice, not evidence of runtime compatibility or
+available resources. The staged local-inference, measurement, Anchor approval,
+restart-recovery, accessibility, and success criteria are recorded in
+[`archon-first-device-validation.md`](archon-first-device-validation.md).
+No iPhone end-to-end run is currently claimed.
 
-For each device, measure:
-
-- Cold loading, time to first visible text, complete-task latency, and UI
-  responsiveness, including cancellation.
-- Peak application memory and failures under memory pressure; account for
-  weights, KV cache, buffers, and the host application together.
-- Battery change over a declared interval and energy per completed task
-  where instrumentation supports it. Label estimates and unavailable
-  measurements; battery percentage alone is not a joule measurement.
-- Sustained performance and available thermal observations over repeated
-  tasks, with ambient and charging conditions recorded.
-- UTF-8 correctness, task quality, and safety/authorization behavior with
-  the exact quantized checkpoint and runtime.
-- Offline inference after installation, interruption/background recovery,
-  and clean handling of resource exhaustion without unauthorized commits.
+Start with the small independently trained byte pilot, then measure
+progressively larger checkpoints toward the quantized 2B goal. Full-scale
+training remains a separate compute task. For each device, record model/chip,
+OS, memory when measurable, battery condition when available, runtime/backend,
+checkpoint hash, quantization, context positions, input/output byte limits,
+and test conditions. Report native-app and browser results separately.
 
 Define device-specific pass/fail budgets before benchmark runs. Begin with
 short bounded contexts and outputs, then measure larger settings. If the
