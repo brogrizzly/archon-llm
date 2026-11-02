@@ -52,10 +52,16 @@ class Utf8ByteCodec:
         self, token_ids: Iterable[int], *, max_bytes: int | None = None
     ) -> str:
         """Decode one fully framed sequence, rejecting invalid or incomplete UTF-8."""
-        decoder = Utf8ByteStreamDecoder(max_bytes=max_bytes)
+        decoder = self.stream_decoder(max_bytes=max_bytes)
         text = decoder.feed(token_ids)
         decoder.finish()
         return text
+
+    def stream_decoder(
+        self, *, max_bytes: int | None = None
+    ) -> Utf8ByteStreamDecoder:
+        """Create a strict incremental decoder for this codec's byte IDs."""
+        return Utf8ByteStreamDecoder(max_bytes=max_bytes)
 
     def to_dict(self) -> dict[str, object]:
         """Return the stable codec description used to identify this format."""
@@ -135,14 +141,15 @@ class Utf8ByteStreamDecoder:
 
         return "".join(output)
 
-    def finish(self) -> None:
-        """Require a valid, EOS-terminated sequence at the end of the stream."""
+    def finish(self, *, require_eos: bool = True) -> None:
+        """Validate final UTF-8 and, by default, require an EOS boundary."""
         if self._completed:
             return
         if not self._started:
             raise ValueError("A byte sequence must begin with BOS.")
         self._finalize_utf8()
-        raise ValueError("A completed byte sequence must end with EOS.")
+        if require_eos:
+            raise ValueError("A completed byte sequence must end with EOS.")
 
 
 def _merge_pair(sequence: list[int], left: int, right: int, merged: int) -> list[int]:
