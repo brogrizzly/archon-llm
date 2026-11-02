@@ -3,7 +3,8 @@
 **Date:** 2026-10-31
 **Decision:** Direct UTF-8 bytes are the selected direction for the next Archon
 pilot. This is a planning decision; the repository still implements byte BPE.
-The codec details below are a proposed implementation contract.
+The codec contract below is implemented independently; the byte model remains
+unimplemented and ByteBPE remains the training baseline.
 
 **Reviewed baseline:** `bd572d5041fd437d196dbb95c40f01e4d8947c16`.
 
@@ -27,9 +28,9 @@ pilot from random initialization, with a separate codec/version and run path.
 Give prior research credit; do not import another model's weights or represent
 standard byte encoding as a new invention.
 
-## Proposed codec contract
+## Codec contract
 
-| Item | Proposal |
+| Item | Contract |
 | --- | --- |
 | Text encoding | Strict UTF-8; each byte value maps to the same integer ID, 0–255 |
 | Framing | BOS = 256; EOS = 257; total alphabet = 258 |
@@ -182,14 +183,14 @@ Keep [the model card](model-card.md) explicit about measured limitations.
 
 ## Replit planning handoff
 
-The following is planning data, not an executable model configuration:
+The following remains model-planning data, not an executable model configuration:
 
 ```json
 {
   "direction": "direct-utf8-bytes",
   "direction_status": "selected-for-planning",
-  "implementation_status": "not-implemented",
-  "codec_proposal": {
+  "implementation_status": "codec-implemented-byte-model-not-implemented",
+  "codec": {
     "format": "archon-utf8-bytes-v1",
     "byte_id_min": 0,
     "byte_id_max": 255,

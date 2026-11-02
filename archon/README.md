@@ -11,6 +11,13 @@ independently trained byte-BPE tokenizer. This is a pipeline validation, not a
 useful or released language model. It uses only the original project-authored
 fixture at [`data/pilot_corpus.txt`](data/pilot_corpus.txt).
 
+The separately versioned `Utf8ByteCodec` in `archon.tokenizer` implements
+`archon-utf8-bytes-v1`: UTF-8 bytes map directly to IDs 0–255, with BOS 256 and
+EOS 257. Encoding is strict and does not normalize text; decoding is strict and
+supports incremental byte streams. This codec is not used by the existing
+ByteBPE training or checkpoints. No byte-model training or byte-model checkpoint
+is included.
+
 An opt-in local inference prototype exists for testing the guarded
 Archon-to-Anchor proposal boundary. Reproducibility-only inference checkpoints
 are included under `checkpoints/`; they are not approved or suitable for
@@ -92,6 +99,10 @@ Run `pnpm run test` to execute the workspace TypeScript suites, validate the
 candidate parameter count, and run the Python training and inference tests.
 `pnpm run build` runs those tests and typechecks before building workspace
 packages.
+
+The strict byte codec has dedicated tests for exact round trips, streaming
+multibyte input, malformed UTF-8, framing, and raw-byte limits. Its length
+limit counts UTF-8 content bytes; BOS and EOS do not count toward that limit.
 
 The versioned golden fixture at
 [`tests/golden/pilot-smoke-inference.json`](tests/golden/pilot-smoke-inference.json)

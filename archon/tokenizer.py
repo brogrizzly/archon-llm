@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import codecs
 from collections import Counter
 from dataclasses import dataclass
 import json
@@ -13,6 +14,135 @@ BYTE_VOCAB_SIZE = 256
 BOS_ID = 256
 EOS_ID = 257
 FIRST_MERGE_ID = 258
+
+UTF8_BYTE_FORMAT = "archon-utf8-bytes-v1"
+UTF8_BYTE_BOS_ID = 256
+UTF8_BYTE_EOS_ID = 257
+UTF8_BYTE_ALPHABET_SIZE = 258
+
+
+def _validate_byte_limit(max_bytes: int | None) -> None:
+    if max_bytes is not None and (
+        isinstance(max_bytes, bool) or not isinstance(max_bytes, int)
+    ):
+        raise TypeError("max_bytes must be a non-negative integer or None.")
+    if max_bytes is not None and max_bytes < 0:
+        raise ValueError("max_bytes must be non-negative.")
+
+
+class Utf8ByteCodec:
+    """Versioned, strict UTF-8 byte codec with explicit BOS/EOS framing."""
+
+    format = UTF8_BYTE_FORMAT
+    bos_id = UTF8_BYTE_BOS_ID
+    eos_id = UTF8_BYTE_EOS_ID
+    alphabet_size = UTF8_BYTE_ALPHABET_SIZE
+
+    def encode(self, text: str, *, max_bytes: int | None = None) -> list[int]:
+        """Encode text without normalization, enforcing an optional byte limit."""
+        _validate_byte_limit(max_bytes)
+        if not isinstance(text, str):
+            raise TypeError("text must be a string.")
+        raw = text.encode("utf-8", errors="strict")
+        if max_bytes is not None and len(raw) > max_bytes:
+            raise ValueError(f"Text exceeds the {max_bytes}-byte limit.")
+        return [self.bos_id, *raw, self.eos_id]
+
+    def decode(
+        self, token_ids: Iterable[int], *, max_bytes: int | None = None
+    ) -> str:
+        """Decode one fully framed sequence, rejecting invalid or incomplete UTF-8."""
+        decoder = Utf8ByteStreamDecoder(max_bytes=max_bytes)
+        text = decoder.feed(token_ids)
+        decoder.finish()
+        return text
+
+    def to_dict(self) -> dict[str, object]:
+        """Return the stable codec description used to identify this format."""
+        return {
+            "format": self.format,
+            "byte_id_min": 0,
+            "byte_id_max": 255,
+            "bos_id": self.bos_id,
+            "eos_id": self.eos_id,
+            "alphabet_size": self.alphabet_size,
+            "normalization": "none",
+            "decode_errors": "strict",
+        }
+
+
+class Utf8ByteStreamDecoder:
+    """Incrementally decode framed byte IDs, buffering partial UTF-8 sequences."""
+
+    def __init__(self, *, max_bytes: int | None = None) -> None:
+        _validate_byte_limit(max_bytes)
+        self.max_bytes = max_bytes
+        self._decoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
+        self._started = False
+        self._completed = False
+        self._utf8_finalized = False
+        self._byte_count = 0
+
+    def _finalize_utf8(self) -> str:
+        if self._utf8_finalized:
+            return ""
+        result = self._decoder.decode(b"", final=True)
+        self._utf8_finalized = True
+        return result
+
+    def feed(self, token_ids: Iterable[int]) -> str:
+        """Consume any available IDs and return newly decoded text.
+
+        A UTF-8 character may span calls to ``feed``. Its text is returned only
+        after all of its bytes have arrived.
+        """
+        output: list[str] = []
+        for token_id in token_ids:
+            if isinstance(token_id, bool) or not isinstance(token_id, int):
+                raise ValueError(f"Invalid token ID: {token_id!r}.")
+            if self._completed:
+                raise ValueError("Token IDs cannot follow EOS.")
+
+            if not self._started:
+                if token_id != UTF8_BYTE_BOS_ID:
+                    raise ValueError("A byte sequence must begin with BOS.")
+                self._started = True
+                if self.max_bytes == 0:
+                    output.append(self._finalize_utf8())
+                continue
+
+            if token_id == UTF8_BYTE_EOS_ID:
+                output.append(self._finalize_utf8())
+                self._completed = True
+                continue
+            if token_id == UTF8_BYTE_BOS_ID:
+                raise ValueError("Unexpected BOS inside a byte sequence.")
+            if token_id < 0 or token_id > 255:
+                raise ValueError(
+                    f"Token ID {token_id} is outside the byte codec alphabet."
+                )
+            if self._utf8_finalized:
+                raise ValueError(f"Text exceeds the {self.max_bytes}-byte limit.")
+            if self.max_bytes is not None and self._byte_count >= self.max_bytes:
+                raise ValueError(f"Text exceeds the {self.max_bytes}-byte limit.")
+
+            output.append(self._decoder.decode(bytes((token_id,)), final=False))
+            self._byte_count += 1
+            if self.max_bytes is not None and self._byte_count == self.max_bytes:
+                # A hard limit is a completed byte boundary: pending UTF-8 is
+                # not allowed to remain incomplete while the stream waits.
+                output.append(self._finalize_utf8())
+
+        return "".join(output)
+
+    def finish(self) -> None:
+        """Require a valid, EOS-terminated sequence at the end of the stream."""
+        if self._completed:
+            return
+        if not self._started:
+            raise ValueError("A byte sequence must begin with BOS.")
+        self._finalize_utf8()
+        raise ValueError("A completed byte sequence must end with EOS.")
 
 
 def _merge_pair(sequence: list[int], left: int, right: int, merged: int) -> list[int]:
