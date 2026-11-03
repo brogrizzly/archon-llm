@@ -136,6 +136,14 @@ class PilotComponentTests(unittest.TestCase):
                 {"prompt": "Answer:", "max_new_tokens": 3},
             )
             self.assertTrue(response["ok"])
+            self.assertEqual(
+                response["result"]["text_format"],
+                ByteBPE.format,
+            )
+            self.assertEqual(
+                set(response["result"]),
+                {"text", "model_digest", "finish_reason", "text_format"},
+            )
             self.assertIn(response["result"]["finish_reason"], {
                 "eos",
                 "max_new_tokens",
@@ -203,6 +211,15 @@ class PilotComponentTests(unittest.TestCase):
             model, tokenizer, _ = load_inference_model(run_directory)
             self.assertIsInstance(tokenizer, Utf8ByteCodec)
             self.assertEqual(model.config.vocabulary_size, tokenizer.vocab_size)
+            inference_response = run_request(
+                run_directory,
+                {"prompt": "Answer:", "max_new_tokens": 1},
+            )
+            self.assertTrue(inference_response["ok"])
+            self.assertEqual(
+                inference_response["result"]["text_format"],
+                Utf8ByteCodec.format,
+            )
 
             checkpoint_path = run_directory / "inference.pt"
             checkpoint = torch.load(

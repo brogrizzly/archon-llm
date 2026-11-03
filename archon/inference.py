@@ -227,6 +227,7 @@ def run_request(run_directory: Path, request: Any) -> dict[str, Any]:
             "text": text,
             "model_digest": model_digest,
             "finish_reason": finish_reason,
+            "text_format": tokenizer.format,
         },
     }
 
