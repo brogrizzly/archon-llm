@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Archon"
+description = "The public home for Archon, an open-source language-model project with Anchor as its mathematical foundation. It links to the repository, bibliography, and math specifications, and clearly states when user inference is unavailable."
+version = "1.0.0"
+id = "artifacts/archon-site"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22435
+
+[services.development]
+run = "pnpm --filter @workspace/archon-site run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/archon-site", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/archon-site/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22435"
+BASE_PATH = "/"
