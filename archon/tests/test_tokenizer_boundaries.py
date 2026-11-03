@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 from archon.tokenizer import BOS_ID, EOS_ID, ByteBPE
@@ -92,6 +95,67 @@ class ByteBPEBoundaryTests(unittest.TestCase):
             with self.subTest(token_id=token_id):
                 with self.assertRaisesRegex(ValueError, "outside this tokenizer"):
                     tokenizer.decode([token_id])
+
+    def test_load_rejects_invalid_merge_references(self) -> None:
+        tokenizer = ByteBPE.train(["abab", "abab"], vocab_size=259)
+        valid_merge = tokenizer.to_dict()["merges"][0]
+        invalid_references = (
+            [-1, valid_merge[1], valid_merge[2]],
+            [tokenizer.vocab_size, valid_merge[1], valid_merge[2]],
+            [BOS_ID, valid_merge[1], valid_merge[2]],
+            [valid_merge[2], valid_merge[1], valid_merge[2]],
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "tokenizer.json"
+            for merge in invalid_references:
+                with self.subTest(merge=merge):
+                    payload = tokenizer.to_dict()
+                    payload["merges"] = [merge]
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "Invalid merge reference"):
+                        ByteBPE.load(path)
+
+    def test_load_rejects_malformed_merge_entries_and_payload_shapes(self) -> None:
+        tokenizer = ByteBPE.train(["abab", "abab"], vocab_size=259)
+        malformed_payloads = (
+            {
+                **tokenizer.to_dict(),
+                "merges": "not a list",
+            },
+            {
+                **tokenizer.to_dict(),
+                "merges": ["not a merge"],
+            },
+            {
+                **tokenizer.to_dict(),
+                "merges": [[97, 98]],
+            },
+            {
+                **tokenizer.to_dict(),
+                "merges": [["97", 98, 258]],
+            },
+            {
+                **tokenizer.to_dict(),
+                "merges": [[97, 98, 258.0]],
+            },
+            {
+                **tokenizer.to_dict(),
+                "vocab_size": True,
+            },
+            [tokenizer.to_dict()],
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "tokenizer.json"
+            for payload in malformed_payloads:
+                with self.subTest(payload=payload):
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaisesRegex(
+                        ValueError,
+                        "Invalid tokenizer|Invalid merge|Tokenizer vocabulary",
+                    ):
+                        ByteBPE.load(path)
 
 
 if __name__ == "__main__":

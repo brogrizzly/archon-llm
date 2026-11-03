@@ -271,21 +271,60 @@ class ByteBPE:
 
     @classmethod
     def load(cls, path: Path) -> "ByteBPE":
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if payload.get("format") != "archon-byte-bpe-v1":
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as error:
+            raise ValueError("Tokenizer file is not valid JSON.") from error
+        if not isinstance(payload, dict):
+            raise ValueError("Invalid tokenizer payload: expected a JSON object.")
+        if payload.get("format") != cls.format:
             raise ValueError("Unsupported tokenizer format.")
-        merges = [tuple(int(part) for part in merge) for merge in payload["merges"]]
-        if any(len(merge) != 3 for merge in merges):
-            raise ValueError("Invalid merge entry.")
+
+        expected_fields = {"format", "vocab_size", "bos_id", "eos_id", "merges"}
+        if set(payload) != expected_fields:
+            raise ValueError("Invalid tokenizer payload fields.")
+        if payload["bos_id"] != BOS_ID or type(payload["bos_id"]) is not int:
+            raise ValueError("Invalid tokenizer BOS ID.")
+        if payload["eos_id"] != EOS_ID or type(payload["eos_id"]) is not int:
+            raise ValueError("Invalid tokenizer EOS ID.")
+
+        raw_merges = payload["merges"]
+        if not isinstance(raw_merges, list):
+            raise ValueError("Invalid tokenizer merges: expected a list.")
+        vocab_size = payload["vocab_size"]
+        if (
+            type(vocab_size) is not int
+            or vocab_size != FIRST_MERGE_ID + len(raw_merges)
+        ):
+            raise ValueError("Tokenizer vocabulary size does not match its merges.")
+
         token_bytes = [bytes([value]) for value in range(BYTE_VOCAB_SIZE)]
         token_bytes.extend((b"", b""))
-        for expected_id, (left, right, merged) in enumerate(merges, FIRST_MERGE_ID):
-            if merged != expected_id or left >= merged or right >= merged:
+        merges: list[tuple[int, int, int]] = []
+        for index, raw_merge in enumerate(raw_merges):
+            if (
+                not isinstance(raw_merge, list)
+                or len(raw_merge) != 3
+                or any(type(part) is not int for part in raw_merge)
+            ):
+                raise ValueError(f"Invalid merge entry at index {index}.")
+            left, right, merged = raw_merge
+            expected_id = FIRST_MERGE_ID + index
+            if merged != expected_id:
                 raise ValueError("Tokenizer merges are not in canonical training order.")
+            if any(
+                token_id < 0
+                or token_id >= expected_id
+                or token_id in (BOS_ID, EOS_ID)
+                for token_id in (left, right)
+            ):
+                raise ValueError(
+                    f"Invalid merge reference at index {index}: "
+                    "operands must reference a byte or an earlier merge token."
+                )
+            merges.append((left, right, merged))
             token_bytes.append(token_bytes[left] + token_bytes[right])
         tokenizer = cls(merges=merges, token_bytes=token_bytes)
-        if payload.get("vocab_size") != tokenizer.vocab_size:
-            raise ValueError("Tokenizer vocabulary size does not match its merges.")
         return tokenizer
 
 
