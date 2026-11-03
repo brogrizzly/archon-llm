@@ -13,7 +13,14 @@ import torch
 
 from .config import ModelConfig
 from .model import ArchonDecoder
-from .tokenizer import ByteBPE, EOS_ID, Utf8ByteCodec
+from .tokenizer import (
+    ByteBPE,
+    EOS_ID,
+    TextCodec,
+    Utf8ByteCodec,
+    codec_metadata,
+    load_text_codec,
+)
 
 
 MAX_REQUEST_BYTES = 16_384
@@ -35,7 +42,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, ByteBPE, str]:
+def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, TextCodec, str]:
     checkpoint_path = run_directory / "inference.pt"
     tokenizer_path = run_directory / "tokenizer.json"
     manifest_path = run_directory / "manifest.json"
@@ -48,7 +55,7 @@ def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, ByteBPE, s
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         tokenizer_bytes = tokenizer_path.read_bytes()
-        tokenizer = ByteBPE.load(tokenizer_path)
+        tokenizer = load_text_codec(tokenizer_path)
         checkpoint: Any = torch.load(
             checkpoint_path,
             map_location="cpu",
@@ -71,6 +78,10 @@ def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, ByteBPE, s
         )
 
     tokenizer_digest = hashlib.sha256(tokenizer_bytes).hexdigest()
+    expected_codec_metadata = codec_metadata(tokenizer)
+    manifest_codec_metadata = manifest.get("text_codec")
+    checkpoint_codec_metadata = checkpoint.get("text_codec")
+    codec_is_required = isinstance(tokenizer, Utf8ByteCodec)
     if (
         not isinstance(manifest.get("training_digest"), str)
         or checkpoint.get("training_digest") != manifest["training_digest"]
@@ -79,6 +90,26 @@ def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, ByteBPE, s
         or checkpoint.get("model_config") != manifest.get("model_config")
         or not isinstance(checkpoint.get("global_step"), int)
         or checkpoint["global_step"] < 1
+        or (
+            codec_is_required
+            and (
+                manifest_codec_metadata != expected_codec_metadata
+                or checkpoint_codec_metadata != expected_codec_metadata
+            )
+        )
+        or (
+            not codec_is_required
+            and (
+                (manifest_codec_metadata is None) != (checkpoint_codec_metadata is None)
+                or (
+                    manifest_codec_metadata is not None
+                    and (
+                        manifest_codec_metadata != expected_codec_metadata
+                        or checkpoint_codec_metadata != expected_codec_metadata
+                    )
+                )
+            )
+        )
     ):
         raise InferenceFailure(
             "CHECKPOINT_MISMATCH",
@@ -110,7 +141,7 @@ def load_inference_model(run_directory: Path) -> tuple[ArchonDecoder, ByteBPE, s
 
 def generate_text(
     model: ArchonDecoder,
-    tokenizer: ByteBPE | Utf8ByteCodec,
+    tokenizer: TextCodec,
     prompt: str,
     max_new_tokens: int,
 ) -> tuple[str, str]:

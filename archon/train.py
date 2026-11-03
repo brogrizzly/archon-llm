@@ -19,7 +19,13 @@ from torch.nn import functional as F
 from .config import ModelConfig, load_json
 from .data_pipeline import load_and_split
 from .model import ArchonDecoder
-from .tokenizer import ByteBPE
+from .tokenizer import (
+    ByteBPE,
+    TextCodec,
+    Utf8ByteCodec,
+    codec_metadata,
+    load_text_codec,
+)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -45,7 +51,7 @@ def digest_texts(texts: list[str]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def pack_texts(texts: list[str], tokenizer: ByteBPE) -> torch.Tensor:
+def pack_texts(texts: list[str], tokenizer: TextCodec) -> torch.Tensor:
     tokens: list[int] = []
     for text in texts:
         tokens.extend(tokenizer.encode(text))
@@ -129,6 +135,7 @@ def save_checkpoint(
         "training_digest": checkpoint_metadata["training_digest"],
         "tokenizer_sha256": checkpoint_metadata["tokenizer_sha256"],
         "model_config": checkpoint_metadata["model_config"],
+        "text_codec": checkpoint_metadata["text_codec"],
         "model_state": model.state_dict(),
     }
     inference_temporary = inference_path.with_suffix(inference_path.suffix + ".tmp")
@@ -145,6 +152,23 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
     config_path = resolve_path(arguments.config)
     config_document = load_json(config_path)
     data_config = config_document["data"]
+    requested_codec = (
+        getattr(arguments, "tokenizer_format", None)
+        or config_document.get("tokenizer_format", "byte-bpe")
+    )
+    codec_formats = {
+        "byte-bpe": ByteBPE.format,
+        "utf8-bytes": Utf8ByteCodec.format,
+        ByteBPE.format: ByteBPE.format,
+        Utf8ByteCodec.format: Utf8ByteCodec.format,
+    }
+    try:
+        expected_codec_format = codec_formats[requested_codec]
+    except (KeyError, TypeError) as error:
+        raise ValueError(
+            "tokenizer_format must be 'byte-bpe' or 'utf8-bytes'."
+        ) from error
+
     source_path = resolve_path(data_config["path"])
     splits = load_and_split(
         source_path,
@@ -164,12 +188,38 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
     if arguments.resume:
         if not checkpoint_path.exists() or not tokenizer_path.exists():
             raise FileNotFoundError("Cannot resume without last.pt and tokenizer.json.")
-        tokenizer = ByteBPE.load(tokenizer_path)
-    else:
-        tokenizer = ByteBPE.train(
-            splits.train,
-            vocab_size=config_document["tokenizer_vocab_target"],
+        tokenizer = load_text_codec(tokenizer_path)
+        if tokenizer.format != expected_codec_format:
+            raise ValueError("Resume tokenizer format does not match the requested format.")
+        manifest_path = run_directory / "manifest.json"
+        resume_manifest: Any = None
+        if manifest_path.is_file():
+            resume_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        actual_codec_metadata = codec_metadata(tokenizer)
+        manifest_codec_metadata = (
+            resume_manifest.get("text_codec")
+            if isinstance(resume_manifest, dict)
+            else None
         )
+        if manifest_codec_metadata is None:
+            if isinstance(tokenizer, Utf8ByteCodec):
+                raise ValueError("Cannot resume byte-model run without text codec metadata.")
+        elif manifest_codec_metadata != actual_codec_metadata:
+            raise ValueError("Resume manifest text codec metadata does not match.")
+        if (
+            isinstance(resume_manifest, dict)
+            and resume_manifest.get("tokenizer") is not None
+            and resume_manifest["tokenizer"] != tokenizer.to_dict()
+        ):
+            raise ValueError("Resume manifest tokenizer does not match tokenizer.json.")
+    else:
+        if expected_codec_format == Utf8ByteCodec.format:
+            tokenizer = Utf8ByteCodec()
+        else:
+            tokenizer = ByteBPE.train(
+                splits.train,
+                vocab_size=config_document["tokenizer_vocab_target"],
+            )
         tokenizer.save(tokenizer_path)
 
     model_values = config_document["model"]
@@ -247,6 +297,7 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
         ).hexdigest(),
         "model_config": model_config.__dict__,
         "training_config": training,
+        "text_codec": codec_metadata(tokenizer),
     }
     start_step = 0
     if arguments.resume:
@@ -258,6 +309,12 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
             )
         except TypeError:
             checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint_codec_metadata = checkpoint.get("text_codec")
+        if checkpoint_codec_metadata is None:
+            if isinstance(tokenizer, Utf8ByteCodec):
+                raise ValueError("Cannot resume byte-model checkpoint without text codec metadata.")
+        elif checkpoint_codec_metadata != codec_metadata(tokenizer):
+            raise ValueError("Resume checkpoint text codec metadata does not match.")
         if checkpoint["training_digest"] != training_digest:
             raise ValueError("Resume config, tokenizer, seed, or corpus does not match.")
         model.load_state_dict(checkpoint["model_state"])
@@ -295,6 +352,7 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
         },
         "tokenizer_training_partition": "train-only",
         "tokenizer": tokenizer.to_dict(),
+        "text_codec": codec_metadata(tokenizer),
         "model_config": model_config.__dict__,
         "parameter_count": model.parameter_count(),
         "training_config": training,
@@ -381,6 +439,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--steps", type=int, help="Override total optimizer steps.")
     parser.add_argument("--device", choices=("cpu",), help="Override the configured device.")
     parser.add_argument("--threads", type=int, help="Override the configured CPU thread count.")
+    parser.add_argument(
+        "--tokenizer-format",
+        choices=("byte-bpe", "utf8-bytes"),
+        help="Select the text codec for a newly initialized run or matching resume.",
+    )
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 

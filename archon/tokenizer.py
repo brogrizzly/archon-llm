@@ -37,6 +37,7 @@ class Utf8ByteCodec:
     bos_id = UTF8_BYTE_BOS_ID
     eos_id = UTF8_BYTE_EOS_ID
     alphabet_size = UTF8_BYTE_ALPHABET_SIZE
+    vocab_size = UTF8_BYTE_ALPHABET_SIZE
 
     def encode(self, text: str, *, max_bytes: int | None = None) -> list[int]:
         """Encode text without normalization, enforcing an optional byte limit."""
@@ -75,6 +76,21 @@ class Utf8ByteCodec:
             "normalization": "none",
             "decode_errors": "strict",
         }
+
+    def save(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+    @classmethod
+    def load(cls, path: Path) -> "Utf8ByteCodec":
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        codec = cls()
+        if payload != codec.to_dict():
+            raise ValueError("Unsupported or mismatched UTF-8 byte codec format.")
+        return codec
 
 
 class Utf8ByteStreamDecoder:
@@ -173,6 +189,9 @@ def _merge_pair(sequence: list[int], left: int, right: int, merged: int) -> list
 class ByteBPE:
     """A deterministic byte-BPE vocabulary with no external tokenizer assets."""
 
+    format = "archon-byte-bpe-v1"
+    bos_id = BOS_ID
+    eos_id = EOS_ID
     merges: list[tuple[int, int, int]]
     token_bytes: list[bytes]
 
@@ -232,7 +251,7 @@ class ByteBPE:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "format": "archon-byte-bpe-v1",
+            "format": self.format,
             "vocab_size": self.vocab_size,
             "bos_id": BOS_ID,
             "eos_id": EOS_ID,
@@ -264,3 +283,27 @@ class ByteBPE:
         if payload.get("vocab_size") != tokenizer.vocab_size:
             raise ValueError("Tokenizer vocabulary size does not match its merges.")
         return tokenizer
+
+
+TextCodec = ByteBPE | Utf8ByteCodec
+
+
+def codec_metadata(codec: TextCodec) -> dict[str, int | str]:
+    """Return the checkpoint identity that binds weights to their text format."""
+    return {
+        "format": codec.format,
+        "bos_id": codec.bos_id,
+        "eos_id": codec.eos_id,
+        "vocab_size": codec.vocab_size,
+    }
+
+
+def load_text_codec(path: Path) -> TextCodec:
+    """Load the codec declared by a tokenizer file; reject unknown formats."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    codec_format = payload.get("format") if isinstance(payload, dict) else None
+    if codec_format == ByteBPE.format:
+        return ByteBPE.load(path)
+    if codec_format == Utf8ByteCodec.format:
+        return Utf8ByteCodec.load(path)
+    raise ValueError("Unsupported tokenizer format.")

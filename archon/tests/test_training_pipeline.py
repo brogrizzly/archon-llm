@@ -17,7 +17,7 @@ from archon.inference import (
     run_request,
 )
 from archon.model import ArchonDecoder
-from archon.tokenizer import ByteBPE
+from archon.tokenizer import ByteBPE, Utf8ByteCodec, codec_metadata
 from archon.train import train
 
 
@@ -159,6 +159,15 @@ class PilotComponentTests(unittest.TestCase):
                 weights_only=False,
             )
             self.assertEqual(first_checkpoint["global_step"], 2)
+            self.assertEqual(
+                first_checkpoint["text_codec"],
+                {
+                    "format": "archon-byte-bpe-v1",
+                    "bos_id": 256,
+                    "eos_id": 257,
+                    "vocab_size": first_checkpoint["model_config"]["vocabulary_size"],
+                },
+            )
             for name, first_tensor in first_checkpoint["model_state"].items():
                 torch.testing.assert_close(
                     first_tensor,
@@ -166,6 +175,130 @@ class PilotComponentTests(unittest.TestCase):
                     rtol=0,
                     atol=0,
                 )
+
+    def test_byte_model_metadata_binds_resume_and_inference_to_codec(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = Path(directory) / "byte-run"
+            config_path = Path(directory) / "byte-config.json"
+            config = json.loads((ROOT / "configs/pilot.json").read_text(encoding="utf-8"))
+            config["tokenizer_format"] = "utf8-bytes"
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+            options = {
+                "config": str(config_path),
+                "steps": 2,
+                "device": "cpu",
+                "threads": 1,
+            }
+
+            report = train(
+                Namespace(**options, run_dir=str(run_directory), resume=False)
+            )
+
+            expected_codec = codec_metadata(Utf8ByteCodec())
+            self.assertEqual(report["text_codec"], expected_codec)
+            manifest_path = run_directory / "manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["text_codec"], expected_codec)
+            model, tokenizer, _ = load_inference_model(run_directory)
+            self.assertIsInstance(tokenizer, Utf8ByteCodec)
+            self.assertEqual(model.config.vocabulary_size, tokenizer.vocab_size)
+
+            checkpoint_path = run_directory / "inference.pt"
+            checkpoint = torch.load(
+                checkpoint_path,
+                map_location="cpu",
+                weights_only=True,
+            )
+            self.assertEqual(checkpoint["text_codec"], expected_codec)
+            resumed_report = train(
+                Namespace(
+                    **options,
+                    run_dir=str(run_directory),
+                    resume=True,
+                    tokenizer_format="utf8-bytes",
+                )
+            )
+            self.assertEqual(resumed_report["completed_steps"], 2)
+            self.assertEqual(resumed_report["text_codec"], expected_codec)
+
+            with self.assertRaisesRegex(ValueError, "requested format"):
+                train(
+                    Namespace(
+                        **options,
+                        run_dir=str(run_directory),
+                        resume=True,
+                        tokenizer_format="byte-bpe",
+                    )
+                )
+
+            last_checkpoint_path = run_directory / "last.pt"
+            last_checkpoint = torch.load(
+                last_checkpoint_path,
+                map_location="cpu",
+                weights_only=False,
+            )
+            last_checkpoint["text_codec"]["format"] = "archon-byte-bpe-v1"
+            torch.save(last_checkpoint, last_checkpoint_path)
+            with self.assertRaisesRegex(ValueError, "checkpoint text codec metadata"):
+                train(
+                    Namespace(
+                        **options,
+                        run_dir=str(run_directory),
+                        resume=True,
+                        tokenizer_format="utf8-bytes",
+                    )
+                )
+
+            checkpoint.pop("text_codec")
+            torch.save(checkpoint, checkpoint_path)
+            with self.assertRaises(InferenceFailure) as context:
+                load_inference_model(run_directory)
+            self.assertEqual(context.exception.code, "CHECKPOINT_MISMATCH")
+
+            manifest.pop("text_codec")
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaises(InferenceFailure) as context:
+                load_inference_model(run_directory)
+            self.assertEqual(context.exception.code, "CHECKPOINT_MISMATCH")
+            with self.assertRaisesRegex(ValueError, "without text codec metadata"):
+                train(
+                    Namespace(
+                        **options,
+                        run_dir=str(run_directory),
+                        resume=True,
+                        tokenizer_format="utf8-bytes",
+                    )
+                )
+
+    def test_legacy_byte_bpe_inference_without_codec_metadata_still_loads(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = Path(directory) / "legacy-bpe"
+            train(
+                Namespace(
+                    config="archon/configs/pilot.json",
+                    run_dir=str(run_directory),
+                    steps=1,
+                    device="cpu",
+                    threads=1,
+                    resume=False,
+                )
+            )
+            manifest_path = run_directory / "manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest.pop("text_codec")
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            checkpoint_path = run_directory / "inference.pt"
+            checkpoint = torch.load(
+                checkpoint_path,
+                map_location="cpu",
+                weights_only=True,
+            )
+            checkpoint.pop("text_codec")
+            torch.save(checkpoint, checkpoint_path)
+
+            _, tokenizer, _ = load_inference_model(run_directory)
+
+            self.assertIsInstance(tokenizer, ByteBPE)
 
     def test_missing_checkpoint_fails_explicitly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
