@@ -68,6 +68,28 @@ class ByteInferenceTests(unittest.TestCase):
         self.assertEqual(text, "A")
         self.assertEqual(finish_reason, "max_new_tokens")
 
+    def test_context_limit_rejects_an_unfinished_character(self) -> None:
+        prompt_token_count = len(self.codec.encode("prompt")[:-1])
+        model = ScriptedModel(
+            [0xE2, 0x82],
+            context_length=prompt_token_count + 2,
+        )
+
+        with self.assertRaisesRegex(InferenceFailure, "valid complete UTF-8"):
+            generate_text(model, self.codec, "prompt", 4)
+
+    def test_context_limit_returns_a_complete_character(self) -> None:
+        prompt_token_count = len(self.codec.encode("prompt")[:-1])
+        model = ScriptedModel(
+            [0xE2, 0x82, 0xAC],
+            context_length=prompt_token_count + 3,
+        )
+
+        text, finish_reason = generate_text(model, self.codec, "prompt", 4)
+
+        self.assertEqual(text, "€")
+        self.assertEqual(finish_reason, "context_limit")
+
     def test_bpe_valid_multibyte_character_can_span_generated_ids(self) -> None:
         tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
         model = ScriptedModel([0xE2, 0x82, 0xAC, tokenizer.eos_id])
