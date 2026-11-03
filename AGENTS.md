@@ -19,6 +19,8 @@ inference service, or deployment context exists.
   semantics by assumption.
 - Treat 4LO as a separate, existing project and reference. Do not recreate or
   modify its product unless the user explicitly asks.
+- Treat Morgan logo files as owner-provided brand artwork. Do not describe the
+  organization as an LLC or imply legal formation unless the owner confirms it.
 - Report confirmed evidence separately from proposals, open questions, and
   assumptions. Do not describe a pilot checkpoint as a useful or
   general-purpose model.

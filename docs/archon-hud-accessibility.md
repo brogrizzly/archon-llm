@@ -30,6 +30,21 @@ cyan, light blue, and soft lime. It is a decorative palette, not a fifth ocular
 mode or an exact hardware-color reproduction; its text and controls are tuned
 for contrast.
 
+## Morgan brand assets and palette
+
+The owner supplied two Morgan logo images for developer use. The HUD uses the
+transparent artwork at
+`artifacts/mockup-sandbox/public/images/brand/morgan-logo-transparent.png`.
+The alternate image at
+`artifacts/mockup-sandbox/public/images/brand/morgan-logo-light-checkerboard.png`
+has a checkerboard background in its pixels and is retained as a source asset,
+not displayed as the website logo.
+
+Clarity Day and Clarity Night use a brand palette drawn from the artwork:
+forest/charcoal, walnut brown, warm amber/gold, cream, and olive. Red Day/Night
+and C64 remain separate user-selectable modes. These are visual-comfort
+preferences, not medical or retinal-safety claims.
+
 Changing a mode only changes the palette, so it preserves the HUD's layout,
 input, text scale, and scroll position. Mode changes are manual. G4LO's
 strain-triggered relief behavior depends on a trusted strain signal and an

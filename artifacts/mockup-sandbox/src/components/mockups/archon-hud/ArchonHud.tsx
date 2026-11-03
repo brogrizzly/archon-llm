@@ -56,30 +56,30 @@ type Palette = {
 
 const palette: Record<AppearanceMode, Palette> = {
   clarity_night: {
-    page: "#141A1D",
-    panel: "#1D2529",
-    soft: "#283237",
-    ink: "#F5F4EC",
-    muted: "#C2CBCC",
-    line: "#758287",
-    accent: "#70D1C2",
-    accentInk: "#112322",
-    accentSoft: "#24413D",
-    warn: "#F0D08A",
-    warnSoft: "#483C22",
+    page: "#19211B",
+    panel: "#242D25",
+    soft: "#303A30",
+    ink: "#F4EDDF",
+    muted: "#D0C7B5",
+    line: "#899078",
+    accent: "#E2AE58",
+    accentInk: "#2C2113",
+    accentSoft: "#463B28",
+    warn: "#F0CB78",
+    warnSoft: "#493D25",
   },
   clarity_day: {
-    page: "#F4F3EC",
-    panel: "#FFFEF9",
-    soft: "#E6E8DE",
-    ink: "#263236",
-    muted: "#4D5E62",
-    line: "#778588",
-    accent: "#2E6F68",
-    accentInk: "#FFFFFF",
-    accentSoft: "#D6E8E2",
-    warn: "#79591F",
-    warnSoft: "#F5EACF",
+    page: "#EAE5D7",
+    panel: "#F6F1E4",
+    soft: "#E1DAC7",
+    ink: "#292E25",
+    muted: "#4D5547",
+    line: "#747A63",
+    accent: "#79552B",
+    accentInk: "#FFF7E8",
+    accentSoft: "#E8D9B9",
+    warn: "#70521F",
+    warnSoft: "#F0E2C2",
   },
   red_night: {
     page: "#1C1115",
@@ -125,8 +125,8 @@ const palette: Record<AppearanceMode, Palette> = {
 const appearanceOptions: { id: AppearanceMode; label: string; description: string; kind: "ocular" | "colorway" }[] = [
   { id: "red_night", label: "Red Night", description: "Red family · low-glare night", kind: "ocular" },
   { id: "red_day", label: "Red Day", description: "Red family · low-glare day", kind: "ocular" },
-  { id: "clarity_night", label: "Clarity Night", description: "Neutral clarity · night", kind: "ocular" },
-  { id: "clarity_day", label: "Clarity Day", description: "Neutral clarity · day", kind: "ocular" },
+  { id: "clarity_night", label: "Clarity Night", description: "Forest, walnut & amber · night", kind: "ocular" },
+  { id: "clarity_day", label: "Clarity Day", description: "Forest, walnut & amber · day", kind: "ocular" },
   { id: "c64", label: "C64 Colorway", description: "Commodore 64-inspired · blue, cyan, soft lime", kind: "colorway" },
 ];
 
@@ -235,7 +235,7 @@ export function ArchonHud() {
   return (
       <main className="archon-root" data-appearance-mode={appearanceMode} style={variables}>
       <style>{`
-        .archon-root { background: var(--page); color: var(--ink); min-height: 100dvh; font-size: var(--ui-scale); }
+        .archon-root { background: var(--page); color: var(--ink); min-height: 100dvh; font-size: var(--ui-scale); font-family: ui-sans-serif, system-ui, sans-serif; }
         .archon-root * { box-sizing: border-box; }
         .archon-root button, .archon-root input, .archon-root textarea { font: inherit; }
         .archon-root button { cursor: pointer; }
@@ -260,11 +260,13 @@ export function ArchonHud() {
       <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-7 sm:py-8 lg:px-10">
         <header className="flex flex-col gap-5 border-b pb-5 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "var(--line)" }}>
           <div className="flex items-center gap-4">
-            <div aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center border-2 font-bold tracking-[-.12em]" style={{ borderColor: "var(--accent)", color: "var(--accent)", background: "var(--accent-soft)" }}>
-              A/
-            </div>
+            <img
+              src="/__mockup/images/brand/morgan-logo-transparent.png"
+              alt="Morgan Company artwork: a gorilla carrying a walnut surfboard with the Morgan name."
+              className="h-[92px] w-[138px] shrink-0 object-contain sm:h-[108px] sm:w-[162px]"
+            />
             <div>
-              <p className="label mb-1" style={{ color: "var(--muted)" }}>Archon · experimental language model</p>
+              <p className="label mb-1" style={{ color: "var(--muted)" }}>Morgan · Archon experimental language model</p>
               <p className="mono small" style={{ color: "var(--muted)" }}>Human-guided workspace / visual prototype</p>
             </div>
           </div>
@@ -411,7 +413,7 @@ export function ArchonHud() {
               Switching palettes preserves the page layout and scroll position. The C64 colorway is decorative, not one of the four ocular modes. Automatic strain-based switching is unavailable because no trusted strain signal is connected.
             </p>
             <div className="mt-5 border-l-4 px-4 py-3 small" style={{ borderColor: "var(--warn)", background: "var(--warn-soft)" }}>
-              The four ocular modes are visual-comfort options, not medical or retinal-safety guarantees. C64 is decorative only; display brightness remains under your device's control.
+              These are manual palette preferences, not medical or retinal-safety guarantees. C64 is decorative only; display brightness remains under your device's control.
             </div>
           </div>
         </section>
