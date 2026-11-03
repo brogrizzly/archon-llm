@@ -14,8 +14,6 @@ import torch
 from .config import ModelConfig
 from .model import ArchonDecoder
 from .tokenizer import (
-    ByteBPE,
-    EOS_ID,
     TextCodec,
     Utf8ByteCodec,
     codec_metadata,
@@ -163,16 +161,10 @@ def generate_text(
         )
 
     token_ids = torch.tensor([input_tokens], dtype=torch.long)
-    generated: list[int] = []
-    byte_decoder = (
-        tokenizer.stream_decoder()
-        if isinstance(tokenizer, Utf8ByteCodec)
-        else None
-    )
-    eos_id = tokenizer.eos_id if isinstance(tokenizer, Utf8ByteCodec) else EOS_ID
+    byte_decoder = tokenizer.stream_decoder()
+    eos_id = tokenizer.eos_id
     decoded_parts: list[str] = []
-    if byte_decoder is not None:
-        byte_decoder.feed([tokenizer.bos_id])
+    byte_decoder.feed([tokenizer.bos_id])
     finish_reason = "max_new_tokens"
     with torch.inference_mode():
         for _ in range(max_new_tokens):
@@ -182,16 +174,6 @@ def generate_text(
             next_token = int(model(token_ids)[:, -1, :].argmax(dim=-1).item())
             if next_token == eos_id:
                 finish_reason = "eos"
-                if byte_decoder is not None:
-                    try:
-                        decoded_parts.append(byte_decoder.feed([next_token]))
-                    except (UnicodeDecodeError, ValueError) as error:
-                        raise InferenceFailure(
-                            "INVALID_GENERATED_TEXT",
-                            "Generated output is not valid complete UTF-8.",
-                        ) from error
-                break
-            if byte_decoder is not None:
                 try:
                     decoded_parts.append(byte_decoder.feed([next_token]))
                 except (UnicodeDecodeError, ValueError) as error:
@@ -199,22 +181,26 @@ def generate_text(
                         "INVALID_GENERATED_TEXT",
                         "Generated output is not valid complete UTF-8.",
                     ) from error
-            else:
-                generated.append(next_token)
+                break
+            try:
+                decoded_parts.append(byte_decoder.feed([next_token]))
+            except (UnicodeDecodeError, ValueError) as error:
+                raise InferenceFailure(
+                    "INVALID_GENERATED_TEXT",
+                    "Generated output is not valid complete UTF-8.",
+                ) from error
             token_ids = torch.cat(
                 (token_ids, torch.tensor([[next_token]], dtype=torch.long)),
                 dim=1,
             )
-    if byte_decoder is not None:
-        try:
-            byte_decoder.finish(require_eos=False)
-        except (UnicodeDecodeError, ValueError) as error:
-            raise InferenceFailure(
-                "INVALID_GENERATED_TEXT",
-                "Generated output is not valid complete UTF-8.",
-            ) from error
-        return "".join(decoded_parts), finish_reason
-    return tokenizer.decode(generated), finish_reason
+    try:
+        byte_decoder.finish(require_eos=False)
+    except (UnicodeDecodeError, ValueError) as error:
+        raise InferenceFailure(
+            "INVALID_GENERATED_TEXT",
+            "Generated output is not valid complete UTF-8.",
+        ) from error
+    return "".join(decoded_parts), finish_reason
 
 
 def run_request(run_directory: Path, request: Any) -> dict[str, Any]:

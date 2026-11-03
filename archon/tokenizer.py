@@ -247,7 +247,11 @@ class ByteBPE:
             if token < 0 or token >= len(self.token_bytes):
                 raise ValueError(f"Token ID {token} is outside this tokenizer's vocabulary.")
             output.extend(self.token_bytes[token])
-        return output.decode("utf-8", errors="replace")
+        return output.decode("utf-8", errors="strict")
+
+    def stream_decoder(self) -> ByteBPEStreamDecoder:
+        """Create a strict incremental decoder for BPE token byte pieces."""
+        return ByteBPEStreamDecoder(self)
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -283,6 +287,66 @@ class ByteBPE:
         if payload.get("vocab_size") != tokenizer.vocab_size:
             raise ValueError("Tokenizer vocabulary size does not match its merges.")
         return tokenizer
+
+
+class ByteBPEStreamDecoder:
+    """Incrementally decode BPE pieces while validating UTF-8 strictly."""
+
+    def __init__(self, tokenizer: ByteBPE) -> None:
+        self.tokenizer = tokenizer
+        self._decoder = codecs.getincrementaldecoder("utf-8")(errors="strict")
+        self._started = False
+        self._completed = False
+        self._utf8_finalized = False
+
+    def _finalize_utf8(self) -> str:
+        if self._utf8_finalized:
+            return ""
+        result = self._decoder.decode(b"", final=True)
+        self._utf8_finalized = True
+        return result
+
+    def feed(self, token_ids: Iterable[int]) -> str:
+        """Consume framed BPE IDs, buffering incomplete UTF-8 characters."""
+        output: list[str] = []
+        for token_id in token_ids:
+            if isinstance(token_id, bool) or not isinstance(token_id, int):
+                raise ValueError(f"Invalid token ID: {token_id!r}.")
+            if self._completed:
+                raise ValueError("Token IDs cannot follow EOS.")
+
+            if not self._started:
+                if token_id != self.tokenizer.bos_id:
+                    raise ValueError("A BPE sequence must begin with BOS.")
+                self._started = True
+                continue
+
+            if token_id == self.tokenizer.eos_id:
+                output.append(self._finalize_utf8())
+                self._completed = True
+                continue
+            if token_id == self.tokenizer.bos_id:
+                raise ValueError("Unexpected BOS inside a BPE sequence.")
+            if token_id < 0 or token_id >= len(self.tokenizer.token_bytes):
+                raise ValueError(
+                    f"Token ID {token_id} is outside this tokenizer's vocabulary."
+                )
+            if self._utf8_finalized:
+                raise ValueError("Text cannot follow a finalized BPE sequence.")
+            output.append(
+                self._decoder.decode(self.tokenizer.token_bytes[token_id], final=False)
+            )
+        return "".join(output)
+
+    def finish(self, *, require_eos: bool = True) -> None:
+        """Validate pending UTF-8 and optionally require an EOS boundary."""
+        if self._completed:
+            return
+        if not self._started:
+            raise ValueError("A BPE sequence must begin with BOS.")
+        self._finalize_utf8()
+        if require_eos:
+            raise ValueError("A completed BPE sequence must end with EOS.")
 
 
 TextCodec = ByteBPE | Utf8ByteCodec

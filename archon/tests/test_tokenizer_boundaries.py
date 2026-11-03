@@ -11,7 +11,7 @@ def byte_only_tokenizer() -> ByteBPE:
 
 
 class ByteBPEBoundaryTests(unittest.TestCase):
-    def test_invalid_utf8_byte_sequences_decode_with_replacement(self) -> None:
+    def test_invalid_utf8_byte_sequences_are_rejected(self) -> None:
         tokenizer = byte_only_tokenizer()
         malformed_sequences = (
             b"\x80",       # lone continuation byte
@@ -22,12 +22,31 @@ class ByteBPEBoundaryTests(unittest.TestCase):
 
         for malformed in malformed_sequences:
             with self.subTest(malformed=malformed):
-                decoded = tokenizer.decode(malformed)
-                self.assertEqual(
-                    decoded,
-                    malformed.decode("utf-8", errors="replace"),
-                )
-                self.assertIn("\ufffd", decoded)
+                with self.assertRaises(UnicodeDecodeError):
+                    tokenizer.decode(malformed)
+
+    def test_stream_decoder_preserves_a_character_split_across_tokens(self) -> None:
+        tokenizer = byte_only_tokenizer()
+        decoder = tokenizer.stream_decoder()
+
+        self.assertEqual(decoder.feed([BOS_ID, 0xE2]), "")
+        self.assertEqual(decoder.feed([0x82]), "")
+        self.assertEqual(decoder.feed([0xAC]), "€")
+        self.assertEqual(decoder.feed([EOS_ID]), "")
+        decoder.finish()
+
+    def test_stream_decoder_rejects_malformed_and_incomplete_utf8(self) -> None:
+        tokenizer = byte_only_tokenizer()
+
+        malformed = tokenizer.stream_decoder()
+        malformed.feed([BOS_ID])
+        with self.assertRaises(UnicodeDecodeError):
+            malformed.feed([0x80])
+
+        incomplete = tokenizer.stream_decoder()
+        incomplete.feed([BOS_ID, 0xE2, 0x82])
+        with self.assertRaises(UnicodeDecodeError):
+            incomplete.feed([EOS_ID])
 
     def test_unpaired_surrogate_is_rejected_by_text_encoder(self) -> None:
         tokenizer = byte_only_tokenizer()
