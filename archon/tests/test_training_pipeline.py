@@ -16,6 +16,7 @@ from archon.inference import (
     load_inference_model,
     run_request,
 )
+from archon.compare_codecs import compare_codecs
 from archon.model import ArchonDecoder
 from archon.tokenizer import ByteBPE, Utf8ByteCodec, codec_metadata
 from archon.train import train
@@ -269,6 +270,69 @@ class PilotComponentTests(unittest.TestCase):
                         tokenizer_format="utf8-bytes",
                     )
                 )
+
+    def test_codec_comparison_runs_same_pilot_and_writes_metrics(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            comparison = compare_codecs(
+                config="archon/configs/pilot.json",
+                run_dir=str(Path(directory) / "comparison"),
+                steps=2,
+                device="cpu",
+                threads=1,
+            )
+
+            self.assertEqual(comparison["format"], "archon-codec-comparison-v1")
+            self.assertIn("not a general benchmark", comparison["scope"])
+            self.assertGreater(
+                comparison["comparison"]["train_token_reduction_percent_with_byte_bpe"],
+                0,
+            )
+            self.assertIn(
+                "torch_version", comparison["shared_settings"]["environment"]
+            )
+            byte_run = comparison["runs"]["utf8-bytes"]
+            bpe_run = comparison["runs"]["byte-bpe"]
+            self.assertEqual(byte_run["text_codec"]["format"], Utf8ByteCodec.format)
+            self.assertEqual(bpe_run["text_codec"]["format"], ByteBPE.format)
+            self.assertEqual(
+                byte_run["split_counts"]["train_documents"],
+                bpe_run["split_counts"]["train_documents"],
+            )
+            splits = load_and_split(
+                ROOT / "data/pilot_corpus.txt", 7331, 0.8, 0.1, 0.1
+            )
+            expected_byte_train_tokens = sum(
+                len(text.encode("utf-8")) + 2 for text in splits.train
+            )
+            self.assertEqual(
+                byte_run["split_counts"]["train_tokens"],
+                expected_byte_train_tokens,
+            )
+            self.assertGreater(
+                byte_run["split_counts"]["train_tokens"],
+                bpe_run["split_counts"]["train_tokens"],
+            )
+            self.assertEqual(byte_run["training_config"], bpe_run["training_config"])
+            self.assertEqual(
+                {
+                    key: value
+                    for key, value in byte_run["model_config"].items()
+                    if key != "vocabulary_size"
+                },
+                {
+                    key: value
+                    for key, value in bpe_run["model_config"].items()
+                    if key != "vocabulary_size"
+                },
+            )
+            for run in (byte_run, bpe_run):
+                self.assertEqual(run["completed_steps"], 2)
+                self.assertGreater(run["elapsed_training_seconds"], 0)
+                self.assertEqual(len(run["tokenizer_sha256"]), 64)
+                self.assertGreater(run["training_positions_per_second_estimate"], 0)
+                self.assertIn("cross_entropy_nats_per_token", run["test"])
+                self.assertIn("perplexity", run["validation"])
+            self.assertTrue(Path(directory, "comparison", "comparison.json").is_file())
 
     def test_legacy_byte_bpe_inference_without_codec_metadata_still_loads(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

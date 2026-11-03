@@ -66,9 +66,27 @@ To run fewer steps while checking the pipeline:
 python -m archon.train --steps 2 --run-dir /tmp/archon-smoke
 ```
 
+To compare both supported text codecs under the same pilot configuration and
+corpus, run:
+
+```sh
+python -m archon.compare_codecs \
+  --config archon/configs/pilot.json \
+  --run-dir archon/runs/codec-comparison
+```
+
+This runs a fresh UTF-8 byte model and a fresh byte-BPE model, then writes
+`comparison.json` beside both run folders. The report includes per-split token
+counts, elapsed training time, estimated throughput, validation and test
+metrics, and the shared corpus/configuration identities. Use a new output
+directory for each comparison. This is a small pilot comparison, not a general
+benchmark; the vocabulary sizes differ and CPU timing is environment-sensitive.
+
 See [`../docs/pilot-evaluation.md`](../docs/pilot-evaluation.md) for the
 measured run and its limitations. Dataset provenance and the declared license
 are in [`data/README.md`](data/README.md).
+See [`../docs/byte-vs-bpe-pilot-comparison.md`](../docs/byte-vs-bpe-pilot-comparison.md)
+for the measured byte-versus-BPE pilot results.
 
 The extended 2,000-step CPU pipeline run can be reproduced with:
 

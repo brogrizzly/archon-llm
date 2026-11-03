@@ -350,6 +350,7 @@ def train(arguments: argparse.Namespace) -> dict[str, Any]:
             "validation": digest_texts(splits.validation),
             "test": digest_texts(splits.test),
         },
+        "tokenizer_sha256": checkpoint_metadata["tokenizer_sha256"],
         "tokenizer_training_partition": "train-only",
         "tokenizer": tokenizer.to_dict(),
         "text_codec": codec_metadata(tokenizer),
