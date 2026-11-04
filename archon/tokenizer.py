@@ -242,6 +242,8 @@ class ByteBPE:
     def decode(self, tokens: Iterable[int]) -> str:
         output = bytearray()
         for token in tokens:
+            if isinstance(token, bool) or not isinstance(token, int):
+                raise ValueError(f"Invalid token ID: {token!r}.")
             if token in (BOS_ID, EOS_ID):
                 continue
             if token < 0 or token >= len(self.token_bytes):
