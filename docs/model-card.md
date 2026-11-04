@@ -3,6 +3,12 @@
 **Status:** extended independent training-pipeline pilot completed; no approved
 Archon v0.0 base model or general-purpose model exists.
 
+The project is planning Archon **0.1.0-alpha.1** (“Halloween”) as a release
+candidate, with a direct UTF-8 byte model targeting iPhone 14 Plus first. This
+is release planning only: no checkpoint has been selected for that candidate,
+and public use is **not approved**. The public site and status API report this
+gate; they do not expose prompt inference.
+
 ## Overview
 
 - **Name:** Archon

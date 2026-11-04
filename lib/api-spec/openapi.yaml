@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: archon
+    description: Archon public release readiness
 paths:
   /healthz:
     get:
@@ -24,6 +26,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /archon/status:
+    get:
+      operationId: getArchonPublicStatus
+      tags: [archon]
+      summary: Get Archon public inference readiness
+      description: Reports the public release candidate and whether inference is approved and available.
+      responses:
+        "200":
+          description: Current public inference readiness
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArchonPublicStatus"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +48,52 @@ components:
           type: string
       required:
         - status
+    ArchonPublicStatus:
+      type: object
+      properties:
+        availability:
+          type: string
+          enum: [unavailable]
+        publicUseApproved:
+          type: boolean
+          enum: [false]
+        releaseVersion:
+          type: string
+        codename:
+          type: string
+        releaseStatus:
+          type: string
+          enum: [planned-release-candidate]
+        firstTarget:
+          type: string
+        modelDirection:
+          type: string
+        checkpoint:
+          type: ["string", "null"]
+        textFormat:
+          type: object
+          properties:
+            codecId:
+              type: string
+            status:
+              type: string
+              enum: [planned-not-bound-to-checkpoint]
+            description:
+              type: string
+          required: [codecId, status, description]
+        blockers:
+          type: array
+          items:
+            type: string
+      required:
+        - availability
+        - publicUseApproved
+        - releaseVersion
+        - codename
+        - releaseStatus
+        - firstTarget
+        - modelDirection
+        - checkpoint
+        - textFormat
+        - blockers
 

@@ -1,5 +1,6 @@
-import { ArrowDownRight, ArrowUpRight, BookOpen, Check, Code2, FileText, Github, LockKeyhole, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDownRight, ArrowUpRight, BookOpen, Check, Code2, FileText, Github, LoaderCircle, LockKeyhole, Menu, RotateCcw, X } from 'lucide-react';
+import { getArchonPublicStatus, type ArchonPublicStatus } from '@workspace/api-client-react';
+import { useEffect, useRef, useState } from 'react';
 
 const repo = 'https://github.com/brogrizzly/archon-llm';
 const docs = [
@@ -16,6 +17,96 @@ function Mark({ dark = false }: { dark?: boolean }) {
       <span className="grid h-9 w-9 place-items-center rounded-full border border-current/30 font-code text-[13px]">A</span>
       <span className="text-[17px] font-semibold tracking-[-.04em]">archon<span className="text-[#bf654b]">.</span></span>
     </a>
+  );
+}
+
+type StatusView = 'loading' | 'unavailable' | 'cancelled' | 'error';
+
+function UseArchonStatus() {
+  const [view, setView] = useState<StatusView>('loading');
+  const [status, setStatus] = useState<ArchonPublicStatus | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const controllerRef = useRef<AbortController | null>(null);
+
+  const checkStatus = () => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setView('loading');
+    setErrorMessage('');
+
+    void getArchonPublicStatus({ signal: controller.signal })
+      .then((result) => {
+        setStatus(result);
+        setView('unavailable');
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setErrorMessage(error instanceof Error ? error.message : 'Status could not be loaded.');
+        setView('error');
+      })
+      .finally(() => {
+        if (controllerRef.current === controller) controllerRef.current = null;
+      });
+  };
+
+  useEffect(() => {
+    checkStatus();
+    return () => controllerRef.current?.abort();
+  }, []);
+
+  const cancelStatusCheck = () => {
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+    setView('cancelled');
+  };
+
+  return (
+    <div className="mt-8 max-w-[570px] rounded-xl border border-[#203d34]/15 bg-[#f3efe5]/70 p-5" aria-live="polite" data-testid="panel-inference-status">
+      {view === 'loading' && (
+        <div className="flex items-center justify-between gap-4" role="status" data-testid="status-release-loading">
+          <span className="inline-flex items-center gap-3 text-sm"><LoaderCircle className="animate-spin" size={17} /> Checking release status…</span>
+          <button type="button" className="text-xs underline underline-offset-4" onClick={cancelStatusCheck}>Cancel check</button>
+        </div>
+      )}
+      {view === 'cancelled' && (
+        <div className="flex flex-wrap items-center justify-between gap-4" role="status" data-testid="status-release-cancelled">
+          <p className="text-sm">Status check canceled. No prompt was sent.</p>
+          <button type="button" className="inline-flex items-center gap-2 text-xs underline underline-offset-4" onClick={checkStatus}><RotateCcw size={13} /> Check again</button>
+        </div>
+      )}
+      {view === 'error' && (
+        <div className="flex flex-wrap items-start justify-between gap-4" role="alert" data-testid="status-release-error">
+          <div><p className="text-sm font-semibold">Release status could not be verified.</p><p className="mt-1 text-xs leading-5 text-[#61736b]">{errorMessage} No prompt was sent.</p></div>
+          <button type="button" className="inline-flex items-center gap-2 text-xs underline underline-offset-4" onClick={checkStatus}><RotateCcw size={13} /> Retry</button>
+        </div>
+      )}
+      {view === 'unavailable' && status && (
+        <div role="status" data-testid="status-inference-unavailable">
+          <div className="flex items-start gap-3">
+            <LockKeyhole className="mt-0.5 shrink-0 text-[#527168]" size={17} />
+            <div>
+              <p className="text-sm font-semibold">Public inference is unavailable</p>
+              <p className="mt-1 text-xs leading-5 text-[#61736b]">This release candidate has not been approved for public use. This page does not accept, transmit, or store prompts.</p>
+            </div>
+          </div>
+          <dl className="mt-5 grid gap-3 border-t border-[#203d34]/10 pt-4 text-xs sm:grid-cols-[150px_1fr]">
+            <dt className="font-semibold">Release candidate</dt><dd>{status.releaseVersion} · {status.codename} · {status.releaseStatus}</dd>
+            <dt className="font-semibold">First target</dt><dd>{status.firstTarget}</dd>
+            <dt className="font-semibold">Model direction</dt><dd>{status.modelDirection}</dd>
+            <dt className="font-semibold">Selected checkpoint</dt><dd>{status.checkpoint ?? 'None approved or selected'}</dd>
+            <dt className="font-semibold">Text format</dt><dd>{status.textFormat.codecId} · planned, not bound to a checkpoint</dd>
+          </dl>
+          <div className="mt-4 border-t border-[#203d34]/10 pt-4">
+            <p className="text-xs font-semibold">Release gates still open</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-[#61736b]">
+              {status.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}
+            </ul>
+          </div>
+          <button type="button" className="mt-4 inline-flex items-center gap-2 text-xs underline underline-offset-4" onClick={checkStatus}><RotateCcw size={13} /> Refresh status</button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -104,7 +195,8 @@ function App() {
                 ['Anchor formula', 'Recorded; execution semantics remain proposed and incomplete.'],
                 ['2B architecture', 'Candidate parameter count checked; not approved, initialized, or trained at full scale.'],
                 ['Training work', 'A small CPU pilot exists for pipeline reproducibility—not language capability.'],
-                ['Public inference', 'No inference-ready public model or inference service is available.'],
+                ['Release candidate', 'Archon 0.1.0-alpha.1 “Halloween” is planned; no release checkpoint is selected or approved.'],
+                ['Public inference', 'Not approved. No public inference endpoint accepts prompts.'],
               ].map(([label, value]) => <div className="grid gap-2 py-4 sm:grid-cols-[170px_1fr] sm:gap-5" key={label}><span className="text-sm font-semibold">{label}</span><span className="text-sm leading-6 text-[#61736b]">{value}</span></div>)}
             </div>
           </div>
@@ -116,15 +208,12 @@ function App() {
               <div className="px-6 py-9 md:px-12 md:py-14">
                 <p className="mb-4 font-code text-[10px] uppercase tracking-[.2em] text-[#bf654b]">04 / Use Archon</p>
                 <h2 id="use-title" className="font-editorial text-5xl tracking-[-.045em] md:text-6xl">Not quite ready<br />to answer.</h2>
-                <p className="mt-6 max-w-[570px] text-[16px] leading-7 text-[#52665e]">There is no inference-ready public model or service yet. We won’t pretend this page can run a prompt.</p>
-                <div className="mt-8 flex max-w-[570px] items-start gap-3 rounded-xl border border-[#203d34]/15 bg-[#f3efe5]/60 p-4" role="status" aria-live="polite" data-testid="status-inference-unavailable">
-                  <LockKeyhole className="mt-0.5 shrink-0 text-[#527168]" size={17} />
-                  <div><p className="text-sm font-semibold">Inference is unavailable</p><p className="mt-1 text-xs leading-5 text-[#61736b]">This prototype does not accept, transmit, or store prompts. There is no waitlist.</p></div>
-                </div>
+                <p className="mt-6 max-w-[570px] text-[16px] leading-7 text-[#52665e]">Archon 0.1.0-alpha.1 “Halloween” is a planned release candidate, not an approved public model. The intended direction is a direct UTF-8 byte language model for iPhone 14 Plus; no release checkpoint is ready.</p>
+                <UseArchonStatus />
               </div>
               <div className="relative flex min-h-[240px] flex-col justify-between overflow-hidden bg-[#bf654b] p-6 text-[#f8f3e9] md:min-h-full md:p-8">
                 <div aria-hidden="true" className="absolute -right-20 -top-16 h-64 w-64 rounded-full border border-white/25"><div className="absolute inset-7 rounded-full border border-dashed border-white/30" /></div>
-                <div className="relative"><Code2 size={22} /><p className="mt-12 font-code text-[10px] uppercase tracking-[.16em] text-white/70">Current release state</p><p className="mt-2 font-editorial text-3xl">Prototype only</p></div>
+                <div className="relative"><Code2 size={22} /><p className="mt-12 font-code text-[10px] uppercase tracking-[.16em] text-white/70">Current release state</p><p className="mt-2 font-editorial text-3xl">Not approved</p></div>
                 <a className="relative mt-9 inline-flex w-fit items-center gap-2 border-b border-white/50 pb-1 text-sm font-medium hover:border-white" href={`${repo}/blob/main/README.md`} target="_blank" rel="noreferrer" data-testid="link-status-readme">Read project status <ArrowUpRight size={14} /></a>
               </div>
             </div>

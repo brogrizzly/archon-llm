@@ -8,6 +8,13 @@ production-ready. This workspace has no inference-ready checkpoint by default.
 When one is absent, the adapter returns `CHECKPOINT_UNAVAILABLE`; it never
 substitutes fixture text or a fabricated proposal.
 
+The planned **0.1.0-alpha.1** (“Halloween”) release candidate is directed
+toward a direct UTF-8 byte model, with iPhone 14 Plus as the first target.
+Public use is not approved: no release checkpoint, checksum, pinned runtime,
+or completed quality, safety, and device evaluation is available. The public
+`GET /api/archon/status` route reports release readiness only; there is no
+public inference route, and the website does not accept or send prompts.
+
 The pilot's context length is 64 tokens. Oversized prompts are rejected rather
 than truncated. The model can return invalid JSON or incomplete output; those
 outputs are reported and are never repaired, extracted from surrounding prose,
