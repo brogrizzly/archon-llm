@@ -159,6 +159,11 @@ def generate_text(
             "PROMPT_TOO_LONG",
             "Prompt exceeds the checkpoint context length; it was not truncated.",
         )
+    if len(input_tokens) == model.config.context_length:
+        raise InferenceFailure(
+            "NO_GENERATION_CAPACITY",
+            "Prompt fills the checkpoint context; no tokens are available to generate.",
+        )
 
     token_ids = torch.tensor([input_tokens], dtype=torch.long)
     byte_decoder = tokenizer.stream_decoder()

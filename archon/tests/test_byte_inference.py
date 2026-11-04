@@ -73,6 +73,19 @@ class ByteInferenceTests(unittest.TestCase):
         self.assertEqual(text, "A")
         self.assertEqual(finish_reason, "max_new_tokens")
 
+    def test_prompt_filling_context_has_no_generation_capacity(self) -> None:
+        prompt_token_count = len(self.codec.encode("prompt")[:-1])
+        model = ScriptedModel([], context_length=prompt_token_count)
+
+        with self.assertRaises(InferenceFailure) as raised:
+            generate_text(model, self.codec, "prompt", 1)
+
+        self.assertEqual(raised.exception.code, "NO_GENERATION_CAPACITY")
+        self.assertEqual(
+            str(raised.exception),
+            "Prompt fills the checkpoint context; no tokens are available to generate.",
+        )
+
     def test_context_limit_rejects_an_unfinished_character(self) -> None:
         prompt_token_count = len(self.codec.encode("prompt")[:-1])
         model = ScriptedModel(
@@ -185,6 +198,44 @@ class ByteInferenceTests(unittest.TestCase):
             },
         )
         self.assertNotIn("\uFFFD", response_text)
+
+    def test_cli_returns_structured_error_when_prompt_fills_context(self) -> None:
+        prompt = "prompt"
+        prompt_token_count = len(self.codec.encode(prompt)[:-1])
+        model = ScriptedModel([], context_length=prompt_token_count)
+        stdin = io.TextIOWrapper(
+            io.BytesIO(
+                json.dumps({"prompt": prompt, "max_new_tokens": 1}).encode("utf-8")
+            ),
+            encoding="utf-8",
+        )
+        stdout = io.StringIO()
+
+        with (
+            patch("sys.argv", ["archon.inference", "--run-dir", "unused"]),
+            patch("sys.stdin", stdin),
+            patch(
+                "archon.inference.load_inference_model",
+                return_value=(model, self.codec, "model-digest"),
+            ),
+            redirect_stdout(stdout),
+        ):
+            exit_code = inference.main()
+
+        self.assertEqual(exit_code, 2)
+        self.assertEqual(
+            json.loads(stdout.getvalue()),
+            {
+                "ok": False,
+                "error": {
+                    "code": "NO_GENERATION_CAPACITY",
+                    "message": (
+                        "Prompt fills the checkpoint context; no tokens are "
+                        "available to generate."
+                    ),
+                },
+            },
+        )
 
     def test_bpe_eos_and_cutoff_reject_unfinished_characters(self) -> None:
         tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
