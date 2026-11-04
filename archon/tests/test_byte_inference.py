@@ -125,6 +125,32 @@ class ByteInferenceTests(unittest.TestCase):
         with self.assertRaisesRegex(InferenceFailure, "valid complete UTF-8"):
             generate_text(model, tokenizer, "prompt", 2)
 
+    def test_bpe_context_limit_rejects_an_unfinished_character(self) -> None:
+        tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
+        prompt_token_count = len(tokenizer.encode("prompt")[:-1])
+        model = ScriptedModel(
+            [0xE2, 0x82],
+            context_length=prompt_token_count + 2,
+            vocabulary_size=tokenizer.vocab_size,
+        )
+
+        with self.assertRaisesRegex(InferenceFailure, "valid complete UTF-8"):
+            generate_text(model, tokenizer, "prompt", 4)
+
+    def test_bpe_context_limit_returns_a_complete_character(self) -> None:
+        tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
+        prompt_token_count = len(tokenizer.encode("prompt")[:-1])
+        model = ScriptedModel(
+            [0xE2, 0x82, 0xAC],
+            context_length=prompt_token_count + 3,
+            vocabulary_size=tokenizer.vocab_size,
+        )
+
+        text, finish_reason = generate_text(model, tokenizer, "prompt", 4)
+
+        self.assertEqual(text, "€")
+        self.assertEqual(finish_reason, "context_limit")
+
     def test_cli_returns_structured_error_for_malformed_bpe_output(self) -> None:
         tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
         model = ScriptedModel([0x80, tokenizer.eos_id])
