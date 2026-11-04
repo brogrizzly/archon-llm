@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+from contextlib import redirect_stdout
+import io
+import json
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 import torch
 
+from archon import inference
 from archon.inference import InferenceFailure, generate_text
 from archon.tokenizer import ByteBPE, Utf8ByteCodec
 
@@ -119,6 +124,41 @@ class ByteInferenceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(InferenceFailure, "valid complete UTF-8"):
             generate_text(model, tokenizer, "prompt", 2)
+
+    def test_cli_returns_structured_error_for_malformed_bpe_output(self) -> None:
+        tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
+        model = ScriptedModel([0x80, tokenizer.eos_id])
+        stdin = io.TextIOWrapper(
+            io.BytesIO(b'{"prompt":"prompt","max_new_tokens":2}'),
+            encoding="utf-8",
+        )
+        stdout = io.StringIO()
+
+        with (
+            patch("sys.argv", ["archon.inference", "--run-dir", "unused"]),
+            patch("sys.stdin", stdin),
+            patch(
+                "archon.inference.load_inference_model",
+                return_value=(model, tokenizer, "model-digest"),
+            ),
+            redirect_stdout(stdout),
+        ):
+            exit_code = inference.main()
+
+        response_text = stdout.getvalue()
+        response = json.loads(response_text)
+        self.assertEqual(exit_code, 2)
+        self.assertEqual(
+            response,
+            {
+                "ok": False,
+                "error": {
+                    "code": "INVALID_GENERATED_TEXT",
+                    "message": "Generated output is not valid complete UTF-8.",
+                },
+            },
+        )
+        self.assertNotIn("\uFFFD", response_text)
 
     def test_bpe_eos_and_cutoff_reject_unfinished_characters(self) -> None:
         tokenizer = ByteBPE.train(["seed", "seed"], vocab_size=258)
